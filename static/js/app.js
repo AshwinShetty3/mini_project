@@ -929,6 +929,22 @@ function openAddUserModal() {
 
   document.getElementById('user-form-name').value = '';
   document.getElementById('user-form-email').value = '';
+
+  const pwdLabel = document.getElementById('user-form-password-label');
+  const pwdInput = document.getElementById('user-form-password');
+  const pwdHint = document.getElementById('user-form-password-hint');
+  if (pwdLabel) pwdLabel.innerHTML = 'Password *';
+  if (pwdInput) {
+    pwdInput.value = 'password123';
+    pwdInput.placeholder = 'Set initial password (default: password123)';
+    pwdInput.required = true;
+    resetPasswordField('user-form-password');
+  }
+  if (pwdHint) {
+    pwdHint.innerHTML = 'Default password is <code>password123</code>. You can customize it here.';
+    pwdHint.style.display = 'block';
+  }
+
   document.getElementById('user-form-role').value = 'faculty';
   document.getElementById('user-form-department').value = 'CSE(AIML)';
   document.getElementById('user-form-designation').value = 'Assistant Professor';
@@ -961,6 +977,22 @@ function openEditUserModal(userId) {
 
   document.getElementById('user-form-name').value = user.name || '';
   document.getElementById('user-form-email').value = user.email || '';
+
+  const pwdLabel = document.getElementById('user-form-password-label');
+  const pwdInput = document.getElementById('user-form-password');
+  const pwdHint = document.getElementById('user-form-password-hint');
+  if (pwdLabel) pwdLabel.innerHTML = 'New Password <span style="font-weight:normal; font-size:11px; color:var(--text-muted);">(optional)</span>';
+  if (pwdInput) {
+    pwdInput.value = ''; // Always blank: admin cannot see existing password!
+    pwdInput.placeholder = 'Leave blank to keep existing password';
+    pwdInput.required = false;
+    resetPasswordField('user-form-password');
+  }
+  if (pwdHint) {
+    pwdHint.innerHTML = '<span style="color:#0284c7; font-weight:600;">&#128274; Existing password is hidden.</span> Type a new password here only to reset it.';
+    pwdHint.style.display = 'block';
+  }
+
   document.getElementById('user-form-role').value = user.role || 'faculty';
   document.getElementById('user-form-department').value = user.department || 'CSE(AIML)';
   document.getElementById('user-form-designation').value = user.designation || '';
@@ -992,6 +1024,7 @@ async function handleSaveUserSubmit(e) {
   const mode = document.getElementById('user-form-mode').value;
   const userId = document.getElementById('user-form-id').value;
   const submitBtn = document.getElementById('user-modal-submit-btn');
+  const pwdVal = (document.getElementById('user-form-password') ? document.getElementById('user-form-password').value.trim() : '');
 
   const payload = {
     name: document.getElementById('user-form-name').value.trim(),
@@ -1004,7 +1037,9 @@ async function handleSaveUserSubmit(e) {
   };
 
   if (mode === 'add') {
-    payload.password = 'password123';
+    payload.password = pwdVal || 'password123';
+  } else if (mode === 'edit' && pwdVal) {
+    payload.password = pwdVal;
   }
 
   if (!payload.name || !payload.email) {

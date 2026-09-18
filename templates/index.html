@@ -1413,6 +1413,14 @@
       </div>
 
       <div class="form-grid-2col">
+        <div class="form-group" style="position: relative;">
+          <label class="form-label" id="user-form-password-label">Password *</label>
+          <input type="password" id="user-form-password" class="form-control" placeholder="Enter password" autocomplete="new-password">
+          <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('user-form-password', this)" style="top:32px;" aria-label="Show password" title="Show password">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+          <div id="user-form-password-hint" style="font-size:11px; color:var(--text-muted); margin-top:4px;"></div>
+        </div>
         <div class="form-group">
           <label class="form-label">Role *</label>
           <select id="user-form-role" class="form-control" required onchange="handleRoleChange(this.value)">
@@ -1424,6 +1432,9 @@
             <option value="student">Student</option>
           </select>
         </div>
+      </div>
+
+      <div class="form-grid-2col">
         <div class="form-group">
           <label class="form-label">Department *</label>
           <select id="user-form-department" class="form-control" required>
@@ -1436,17 +1447,15 @@
             <option value="Basic Science">Basic Science</option>
           </select>
         </div>
-      </div>
-
-      <div class="form-grid-2col">
         <div class="form-group">
           <label class="form-label">Designation</label>
           <input type="text" id="user-form-designation" class="form-control" placeholder="e.g. Assistant Professor" value="Assistant Professor">
         </div>
-        <div class="form-group">
-          <label class="form-label">Phone Number</label>
-          <input type="text" id="user-form-phone" class="form-control" placeholder="+91 98765 43210">
-        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="text" id="user-form-phone" class="form-control" placeholder="+91 98765 43210">
       </div>
 
       <div style="display:flex; gap:10px; margin-top: 18px;">

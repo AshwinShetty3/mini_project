@@ -375,8 +375,12 @@ async def create_admin_user(body: UserCreateRequest):
 
     payload = body.model_dump()
     payload["email"] = clean_email
+    if not payload.get("password"):
+        payload["password"] = "password123"
     new_user = store.add_user(payload)
-    return {"success": True, "user": new_user}
+    safe_user = copy.deepcopy(new_user)
+    safe_user.pop("password", None)
+    return {"success": True, "user": safe_user}
 
 @app.put("/api/admin/users/{user_id}")
 @app.put("/api/admin/faculty/{user_id}")
@@ -386,7 +390,12 @@ async def update_admin_user(user_id: str, body: UserUpdateRequest):
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
 
-    update_data = {k: v for k, v in body.model_dump().items() if v is not None}
+    update_data = {
+        k: v for k, v in body.model_dump().items()
+        if v is not None and (k != "password" or (isinstance(v, str) and v.strip() != ""))
+    }
+    if "password" in update_data:
+        update_data["password"] = update_data["password"].strip()
     if "email" in update_data:
         update_data["email"] = update_data["email"].strip().lower()
         all_users = store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
@@ -395,7 +404,9 @@ async def update_admin_user(user_id: str, body: UserUpdateRequest):
             raise HTTPException(status_code=400, detail="Another user already has this email address.")
 
     updated = store.update_user(user_id, update_data)
-    return {"success": True, "user": updated}
+    safe_updated = copy.deepcopy(updated)
+    safe_updated.pop("password", None)
+    return {"success": True, "user": safe_updated}
 
 @app.delete("/api/admin/users/{user_id}")
 @app.delete("/api/admin/faculty/{user_id}")
