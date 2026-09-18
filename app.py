@@ -113,7 +113,7 @@ async def get_system_status():
 async def get_all_users():
     try:
         store = get_store()
-        return store.get_users()
+        return store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
     except Exception as e:
         return []
 
@@ -121,7 +121,7 @@ async def get_all_users():
 async def login(data: LoginRequest):
     try:
         store = get_store()
-        users = store.get_users()
+        all_accounts = store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
     except Exception as e:
         return JSONResponse(
             status_code=500,
@@ -144,14 +144,14 @@ async def login(data: LoginRequest):
 
     matched = None
     # 1. Match exact email
-    for u in users:
+    for u in all_accounts:
         if u.get("email", "").lower() == identifier:
             matched = u
             break
             
     # 2. Match username before @ or name
     if not matched:
-        for u in users:
+        for u in all_accounts:
             u_email = u.get("email", "").lower()
             u_name = u.get("name", "").lower()
             username = u_email.split("@")[0]
@@ -344,7 +344,7 @@ async def get_calendar_events():
 @app.get("/api/admin/faculty")
 async def list_admin_users():
     store = get_store()
-    return store.get_users()
+    return store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
 
 @app.get("/api/admin/users/{user_id}")
 async def get_admin_user(user_id: str):
@@ -359,7 +359,8 @@ async def get_admin_user(user_id: str):
 async def create_admin_user(body: UserCreateRequest):
     store = get_store()
     clean_email = body.email.strip().lower()
-    existing = [u for u in store.get_users() if u.get("email", "").lower() == clean_email]
+    all_users = store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
+    existing = [u for u in all_users if u.get("email", "").lower() == clean_email]
     if existing:
         raise HTTPException(status_code=400, detail=f"A user with email '{clean_email}' already exists.")
 
@@ -379,7 +380,8 @@ async def update_admin_user(user_id: str, body: UserUpdateRequest):
     update_data = {k: v for k, v in body.model_dump().items() if v is not None}
     if "email" in update_data:
         update_data["email"] = update_data["email"].strip().lower()
-        dup = [u for u in store.get_users() if u.get("id") != user_id and u.get("email", "").lower() == update_data["email"]]
+        all_users = store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
+        dup = [u for u in all_users if u.get("id") != user_id and u.get("email", "").lower() == update_data["email"]]
         if dup:
             raise HTTPException(status_code=400, detail="Another user already has this email address.")
 

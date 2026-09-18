@@ -39,6 +39,8 @@ class MongoDataStore:
         """
         If MongoDB collections are empty, populate them directly with initial
         reference state from seed_data.py into MongoDB Atlas.
+        Keeps admin credentials in a dedicated 'admin' collection and all other
+        institutional accounts in 'users'.
         """
         users = copy.deepcopy(INITIAL_USERS)
         leaves = copy.deepcopy(INITIAL_LEAVES)
@@ -50,9 +52,49 @@ class MongoDataStore:
         principal_metrics = copy.deepcopy(PRINCIPAL_METRICS)
         calendar_events = copy.deepcopy(CALENDAR_EVENTS)
 
+        # 1. Dedicated 'admin' collection migration & seeding
+        admins_in_users = list(self.db.users.find({"$or": [{"role": "admin"}, {"email": "admin@klsvdit.ac.in"}]}))
+        if admins_in_users:
+            logger.info(f"Moving {len(admins_in_users)} admin document(s) from 'users' to dedicated 'admin' collection...")
+            for adm in admins_in_users:
+                adm_copy = copy.deepcopy(adm)
+                adm_copy.pop("_id", None)
+                if not self.db.admin.find_one({"email": adm_copy.get("email")}):
+                    self.db.admin.insert_one(adm_copy)
+            # Remove from users collection
+            self.db.users.delete_many({"$or": [{"role": "admin"}, {"email": "admin@klsvdit.ac.in"}]})
+
+        if self.db.admin.count_documents({}) == 0:
+            logger.info("Seeding dedicated 'admin' collection in MongoDB...")
+            admin_user = next((u for u in users if u.get("role") == "admin"), None)
+            if not admin_user:
+                admin_user = {
+                    "id": "usr_admin",
+                    "name": "Admin",
+                    "email": "admin@klsvdit.ac.in",
+                    "role": "admin",
+                    "department": "Administration",
+                    "designation": "Administrator",
+                    "avatar": "",
+                    "phone": "+91 98765 43214",
+                    "password": "password123"
+                }
+            admin_doc = copy.deepcopy(admin_user)
+            if "password" not in admin_doc:
+                admin_doc["password"] = "password123"
+            self.db.admin.insert_one(admin_doc)
+
+        # Ensure 'users' collection NEVER contains admin accounts
+        self.db.users.delete_many({"$or": [{"role": "admin"}, {"email": "admin@klsvdit.ac.in"}]})
+
+        # 2. 'users' collection (Non-Admin users only)
         if self.db.users.count_documents({}) == 0:
-            logger.info("Seeding users collection in MongoDB...")
-            self.db.users.insert_many(copy.deepcopy(users))
+            logger.info("Seeding non-admin users collection in MongoDB...")
+            non_admin_users = [u for u in users if u.get("role") != "admin"]
+            for u in non_admin_users:
+                if "password" not in u:
+                    u["password"] = "password123"
+            self.db.users.insert_many(copy.deepcopy(non_admin_users))
 
         if self.db.leaves.count_documents({}) == 0:
             logger.info("Seeding leaves collection in MongoDB...")
@@ -83,7 +125,48 @@ class MongoDataStore:
         if self.db.meta.count_documents({"key": "calendar_events"}) == 0:
             self.db.meta.insert_one({"key": "calendar_events", "data": copy.deepcopy(calendar_events)})
 
-    # --- Users ---
+    # --- Admin Collection (Dedicated for Administrator Credentials) ---
+    def get_admins(self):
+        admins = list(self.db.admin.find({}, {"_id": 0}))
+        for a in admins:
+            if "password" not in a:
+                a["password"] = "password123"
+            a["role"] = "admin"
+        return admins
+
+    def get_admin_by_id(self, admin_id):
+        a = self.db.admin.find_one({"id": admin_id}, {"_id": 0})
+        if a and "password" not in a:
+            a["password"] = "password123"
+        return a
+
+    def add_admin(self, admin_data):
+        if not admin_data.get("id"):
+            email_prefix = admin_data.get("email", "").split("@")[0].lower()
+            clean_prefix = "".join(c for c in email_prefix if c.isalnum() or c == "_")
+            ts = int(datetime.now().timestamp())
+            admin_data["id"] = f"usr_{clean_prefix}" if clean_prefix and not self.db.admin.find_one({"id": f"usr_{clean_prefix}"}) else f"usr_{clean_prefix}_{ts}"
+        if "password" not in admin_data or not admin_data["password"]:
+            admin_data["password"] = "password123"
+        admin_data["role"] = "admin"
+        self.db.admin.insert_one(copy.deepcopy(admin_data))
+        clean = copy.deepcopy(admin_data)
+        clean.pop("_id", None)
+        return clean
+
+    def update_admin(self, admin_id, update_data):
+        clean_update = copy.deepcopy(update_data)
+        clean_update.pop("id", None)
+        clean_update.pop("_id", None)
+        clean_update["role"] = "admin"
+        self.db.admin.update_one({"id": admin_id}, {"$set": clean_update})
+        return self.get_admin_by_id(admin_id)
+
+    def delete_admin(self, admin_id):
+        self.db.admin.delete_one({"id": admin_id})
+        return True
+
+    # --- Users Collection (Non-Admin Accounts: Faculty, HOD, Dean, Principal, Student) ---
     def get_users(self):
         users = list(self.db.users.find({}, {"_id": 0}))
         for u in users:
@@ -91,20 +174,34 @@ class MongoDataStore:
                 u["password"] = "password123"
         return users
 
+    def get_all_accounts(self):
+        """Returns unified list of all accounts (admins from 'admin' + users from 'users')"""
+        admins = self.get_admins()
+        users = self.get_users()
+        return admins + users
+
     def get_user_by_id(self, user_id):
+        # 1. Search in dedicated admin collection
+        admin = self.get_admin_by_id(user_id)
+        if admin:
+            return admin
+        # 2. Search in users collection
         u = self.db.users.find_one({"id": user_id}, {"_id": 0})
         if u and "password" not in u:
             u["password"] = "password123"
         return u
 
     def add_user(self, user_data):
+        # Route admin to 'admin' collection
+        if (user_data.get("role") or "").lower() == "admin":
+            return self.add_admin(user_data)
+
+        # Non-admin users go to 'users' collection
         if not user_data.get("id"):
             email_prefix = user_data.get("email", "").split("@")[0].lower()
             clean_prefix = "".join(c for c in email_prefix if c.isalnum() or c == "_")
             ts = int(datetime.now().timestamp())
             user_data["id"] = f"usr_{clean_prefix}" if clean_prefix and not self.db.users.find_one({"id": f"usr_{clean_prefix}"}) else f"usr_{clean_prefix}_{ts}"
-        if "avatar" not in user_data or not user_data["avatar"]:
-            user_data["avatar"] = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
         if "password" not in user_data or not user_data["password"]:
             user_data["password"] = "password123"
         self.db.users.insert_one(copy.deepcopy(user_data))
@@ -113,6 +210,31 @@ class MongoDataStore:
         return clean
 
     def update_user(self, user_id, update_data):
+        new_role = (update_data.get("role") or "").lower()
+
+        # Case 1: Currently in 'admin' collection
+        if self.db.admin.find_one({"id": user_id}):
+            if new_role and new_role != "admin":
+                # Demoted from admin -> move to 'users' collection
+                current = self.get_admin_by_id(user_id)
+                self.delete_admin(user_id)
+                current.update(update_data)
+                return self.add_user(current)
+            else:
+                return self.update_admin(user_id, update_data)
+
+        # Case 2: Currently in 'users' collection
+        if new_role == "admin":
+            # Promoted to admin -> move to 'admin' collection
+            current = self.get_user_by_id(user_id)
+            self.delete_user(user_id)
+            if current:
+                current.update(update_data)
+                return self.add_admin(current)
+            else:
+                return self.add_admin(update_data)
+
+        # Standard non-admin update in 'users' collection
         clean_update = copy.deepcopy(update_data)
         clean_update.pop("id", None)
         clean_update.pop("_id", None)
@@ -120,6 +242,10 @@ class MongoDataStore:
         return self.get_user_by_id(user_id)
 
     def delete_user(self, user_id):
+        # Check admin collection first
+        if self.db.admin.find_one({"id": user_id}):
+            return self.delete_admin(user_id)
+        # Otherwise delete from users collection
         self.db.users.delete_one({"id": user_id})
         return True
 

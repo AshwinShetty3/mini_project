@@ -40,8 +40,13 @@ class JsonDataStore:
             print(f"Error saving data to {DATA_FILE}: {e}")
 
     def reset_to_seed(self):
+        all_initial = copy.deepcopy(INITIAL_USERS)
+        admin_users = [u for u in all_initial if u.get("role") == "admin"]
+        regular_users = [u for u in all_initial if u.get("role") != "admin"]
+
         self.data = {
-            "users": copy.deepcopy(INITIAL_USERS),
+            "admin": admin_users,
+            "users": regular_users,
             "leaves": copy.deepcopy(INITIAL_LEAVES),
             "slots": copy.deepcopy(INITIAL_SLOTS),
             "notifications": copy.deepcopy(INITIAL_NOTIFICATIONS),
@@ -53,12 +58,18 @@ class JsonDataStore:
         }
         self._save()
 
-    # --- Users ---
+    # --- Admin & Users ---
+    def get_admins(self):
+        return self.data.get("admin", [])
+
     def get_users(self):
-        return self.data.get("users", [])
+        return [u for u in self.data.get("users", []) if u.get("role") != "admin"]
+
+    def get_all_accounts(self):
+        return self.get_admins() + self.get_users()
 
     def get_user_by_id(self, user_id):
-        for u in self.data.get("users", []):
+        for u in self.get_all_accounts():
             if u["id"] == user_id:
                 return u
         return None
@@ -66,15 +77,25 @@ class JsonDataStore:
     def add_user(self, user_data):
         user_id = f"usr_{int(datetime.now().timestamp()*1000)}"
         user_data["id"] = user_id
-        if "avatar" not in user_data or not user_data["avatar"]:
-            user_data["avatar"] = "https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80"
-        self.data.setdefault("users", []).append(user_data)
+        if (user_data.get("role") or "").lower() == "admin":
+            self.data.setdefault("admin", []).append(user_data)
+        else:
+            self.data.setdefault("users", []).append(user_data)
         self._save()
         return user_data
 
+    def update_user(self, user_id, update_data):
+        for pool in ["admin", "users"]:
+            for u in self.data.get(pool, []):
+                if u["id"] == user_id:
+                    u.update(update_data)
+                    self._save()
+                    return u
+        return None
+
     def delete_user(self, user_id):
-        users = self.data.get("users", [])
-        self.data["users"] = [u for u in users if u["id"] != user_id]
+        self.data["admin"] = [u for u in self.data.get("admin", []) if u["id"] != user_id]
+        self.data["users"] = [u for u in self.data.get("users", []) if u["id"] != user_id]
         self._save()
         return True
 
