@@ -96,6 +96,16 @@ class MongoDataStore:
                     u["password"] = "password123"
             self.db.users.insert_many(copy.deepcopy(non_admin_users))
 
+        # 3. Explicitly ensure EVERY document in 'admin' and 'users' has the 'password' field in MongoDB
+        self.db.admin.update_many(
+            {"$or": [{"password": {"$exists": False}}, {"password": None}, {"password": ""}]},
+            {"$set": {"password": "password123"}}
+        )
+        self.db.users.update_many(
+            {"$or": [{"password": {"$exists": False}}, {"password": None}, {"password": ""}]},
+            {"$set": {"password": "password123"}}
+        )
+
         if self.db.leaves.count_documents({}) == 0:
             logger.info("Seeding leaves collection in MongoDB...")
             self.db.leaves.insert_many(copy.deepcopy(leaves))
