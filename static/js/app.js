@@ -136,7 +136,8 @@ async function handleLoginSubmit(event) {
     switchView(landingView);
   } else {
     if (errorEl) {
-      errorEl.textContent = (res && res.message) ? res.message : 'Invalid login credentials. Please try again.';
+      const msg = (res && res.message) || (res && res.detail) || 'Database or Server connection error. Please verify Render Environment variables and MongoDB Atlas IP access (0.0.0.0/0).';
+      errorEl.textContent = msg;
       errorEl.style.display = 'block';
     }
   }

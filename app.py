@@ -90,25 +90,44 @@ async def serve_index(request: Request):
 
 @app.get("/api/status")
 async def get_system_status():
-    store = get_store()
-    is_mongo = "MongoDataStore" in store.__class__.__name__
-    return {
-        "system": "FacultyFlow",
-        "institution": "KLS VDIT, Haliyal",
-        "database_backend": "MongoDB" if is_mongo else "Local Memory / JSON Store",
-        "status": "online",
-        "version": "1.0.0"
-    }
+    try:
+        store = get_store()
+        is_mongo = "MongoDataStore" in store.__class__.__name__
+        return {
+            "system": "FacultyFlow",
+            "institution": "KLS VDIT, Haliyal",
+            "database_backend": "MongoDB Atlas" if is_mongo else "Local Store",
+            "status": "online",
+            "version": "1.0.0"
+        }
+    except Exception as e:
+        return {
+            "system": "FacultyFlow",
+            "institution": "KLS VDIT, Haliyal",
+            "database_backend": "Disconnected",
+            "status": "error",
+            "error": str(e)
+        }
 
 @app.get("/api/auth/users")
 async def get_all_users():
-    store = get_store()
-    return store.get_users()
+    try:
+        store = get_store()
+        return store.get_users()
+    except Exception as e:
+        return []
 
 @app.post("/api/auth/login")
 async def login(data: LoginRequest):
-    store = get_store()
-    users = store.get_users()
+    try:
+        store = get_store()
+        users = store.get_users()
+    except Exception as e:
+        return JSONResponse(
+            status_code=500,
+            content={"success": False, "message": f"Database Error: {e}. Please ensure MONGODB_URI is set in Render Environment and MongoDB Atlas allows IP 0.0.0.0/0."}
+        )
+
     identifier = (data.email or "").strip().lower()
     
     matched = None
@@ -149,7 +168,7 @@ async def login(data: LoginRequest):
 
     return JSONResponse(
         status_code=401,
-        content={"success": False, "message": "Invalid email or username. Available demo accounts: ananya@klsvdit.ac.in, rahul@klsvdit.ac.in, kumar@klsvdit.ac.in, reddy@klsvdit.ac.in, admin@klsvdit.ac.in"}
+        content={"success": False, "message": "Invalid email or username. Available accounts: ananya@klsvdit.ac.in, admin@klsvdit.ac.in, rahul@klsvdit.ac.in, etc."}
     )
 
 # --- Leaves API ---
