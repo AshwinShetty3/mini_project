@@ -1413,6 +1413,17 @@ body {
   border: none;
   cursor: pointer;
   color: var(--text-muted);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 4px;
+  border-radius: 4px;
+  transition: color 0.15s ease, background-color 0.15s ease;
+}
+
+.eye-toggle-btn:hover {
+  color: var(--navy-dark, #1e293b);
+  background: rgba(0, 0, 0, 0.04);
 }
 
 .form-row-check {

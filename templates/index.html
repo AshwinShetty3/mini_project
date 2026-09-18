@@ -50,8 +50,8 @@
           <div class="form-group" style="position: relative;">
             <label class="form-label" for="login-password">Password</label>
             <input type="password" id="login-password" class="form-control" placeholder="Enter your password" autocomplete="current-password" required>
-            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('login-password')" aria-label="Toggle password visibility">
-              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('login-password', this)" aria-label="Show password" title="Show password">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </button>
           </div>
           <div id="login-error-msg" style="display:none; color:#dc2626; font-size:12px; margin-bottom:12px; font-weight:600; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:8px 10px;"></div>
@@ -1417,8 +1417,8 @@
         <div class="form-group" style="position: relative;">
           <label class="form-label">Password *</label>
           <input type="password" id="user-form-password" class="form-control" placeholder="Enter password" value="password123" required>
-          <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('user-form-password')" style="top:32px;">
-            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('user-form-password', this)" style="top:32px;" aria-label="Show password" title="Show password">
+            <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
           </button>
         </div>
         <div class="form-group">
