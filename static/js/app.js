@@ -936,7 +936,7 @@ function openAddUserModal() {
   if (pwdLabel) pwdLabel.innerHTML = 'Password *';
   if (pwdInput) {
     pwdInput.value = 'password123';
-    pwdInput.placeholder = 'Set initial password (default: password123)';
+    pwdInput.placeholder = 'Create a new password';
     pwdInput.required = true;
     resetPasswordField('user-form-password');
   }
@@ -984,12 +984,12 @@ function openEditUserModal(userId) {
   if (pwdLabel) pwdLabel.innerHTML = 'New Password <span style="font-weight:normal; font-size:11px; color:var(--text-muted);">(optional)</span>';
   if (pwdInput) {
     pwdInput.value = ''; // Always blank: admin cannot see existing password!
-    pwdInput.placeholder = 'Leave blank to keep existing password';
+    pwdInput.placeholder = 'Create a new password';
     pwdInput.required = false;
     resetPasswordField('user-form-password');
   }
   if (pwdHint) {
-    pwdHint.innerHTML = '<span style="color:#0284c7; font-weight:600;">&#128274; Existing password is hidden.</span> Type a new password here only to reset it.';
+    pwdHint.innerHTML = '<span style="color:#0284c7; font-weight:600;">&#128274; Existing password is hidden.</span> Leave blank to keep existing, or type to create a new password.';
     pwdHint.style.display = 'block';
   }
 
@@ -1249,8 +1249,52 @@ function resetPasswordField(inputId) {
   }
 }
 
+function openUserProfileModal(userData) {
+  const u = userData || AppState.currentUser;
+  if (!u) return;
+
+  const modal = document.getElementById('user-profile-modal-backdrop');
+  if (!modal) return;
+
+  const titleEl = document.getElementById('profile-modal-title');
+  if (titleEl) {
+    titleEl.textContent = userData ? `User Profile: ${u.name}` : `My Profile & Credentials`;
+  }
+
+  const avatarEl = document.getElementById('profile-view-avatar');
+  const nameHeaderEl = document.getElementById('profile-view-header-name');
+  const roleBadgeEl = document.getElementById('profile-view-header-role');
+  const designationHeaderEl = document.getElementById('profile-view-header-designation');
+
+  const nameInput = document.getElementById('profile-view-name');
+  const emailInput = document.getElementById('profile-view-email');
+  const deptInput = document.getElementById('profile-view-department');
+  const phoneInput = document.getElementById('profile-view-phone');
+  const roleInput = document.getElementById('profile-view-role');
+  const designationInput = document.getElementById('profile-view-designation');
+
+  const avatarSrc = u.avatar || DEFAULT_AVATAR;
+  if (avatarEl) avatarEl.src = avatarSrc;
+  if (nameHeaderEl) nameHeaderEl.textContent = u.name || 'User';
+  if (roleBadgeEl) {
+    const roleLower = (u.role || 'faculty').toLowerCase();
+    roleBadgeEl.textContent = roleLower;
+    roleBadgeEl.className = `role-badge role-${roleLower}`;
+  }
+  if (designationHeaderEl) designationHeaderEl.textContent = u.designation || u.department || 'Academic Member';
+
+  if (nameInput) nameInput.value = u.name || '-';
+  if (emailInput) emailInput.value = u.email || '-';
+  if (deptInput) deptInput.value = u.department || 'General';
+  if (phoneInput) phoneInput.value = u.phone || 'Not Provided';
+  if (roleInput) roleInput.value = (u.role || '').toUpperCase();
+  if (designationInput) designationInput.value = u.designation || 'Academic Staff';
+
+  modal.classList.add('active');
+}
+
 function handleUserCardClick() {
-  switchView('view-leave-balance');
+  openUserProfileModal();
 }
 
 function handleAddFacultySubmit(e) {

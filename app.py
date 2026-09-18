@@ -167,7 +167,9 @@ async def login(data: LoginRequest):
                 status_code=401,
                 content={"success": False, "message": "Incorrect password. Please verify your credentials."}
             )
-        return {"success": True, "user": matched}
+        safe_matched = copy.deepcopy(matched)
+        safe_matched.pop("password", None)
+        return {"success": True, "user": safe_matched}
 
     return JSONResponse(
         status_code=401,
