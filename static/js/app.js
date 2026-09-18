@@ -649,7 +649,7 @@ async function loadAdminPanel() {
 
   tbody.innerHTML = `
     <tr>
-      <td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">
+      <td colspan="5" style="text-align:center; padding:32px; color:var(--text-muted);">
         <div style="display:inline-flex; align-items:center; gap:8px;">
           Loading user accounts...
         </div>
@@ -686,7 +686,7 @@ function renderAdminTable(userList) {
   if (!userList || userList.length === 0) {
     tbody.innerHTML = `
       <tr>
-        <td colspan="6" style="text-align:center; padding:36px; color:var(--text-muted);">
+        <td colspan="5" style="text-align:center; padding:36px; color:var(--text-muted);">
           No users match the selected search or filter criteria.
         </td>
       </tr>
@@ -702,8 +702,6 @@ function renderAdminTable(userList) {
       : `<div class="avatar-initials-sm">${initials}</div>`;
 
     const roleBadgeClass = `role-${roleLower}`;
-    const cleanPassword = u.password || 'password123';
-    const rowPwdId = `pwd-row-${u.id}`;
 
     return `
       <tr>
@@ -726,17 +724,9 @@ function renderAdminTable(userList) {
           <div style="font-weight:600;">${escapeHtml(u.department || 'General')}</div>
           <div style="font-size:11px; color:var(--text-muted);">${escapeHtml(u.phone || '-')}</div>
         </td>
-        <td>
-          <div class="pwd-masked-pill">
-            <span id="${rowPwdId}">••••••••</span>
-            <button type="button" class="pwd-peek-btn" title="Show / Hide Password" onclick="togglePasswordPeek('${rowPwdId}', '${escapeHtml(cleanPassword)}')">
-              <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
-            </button>
-          </div>
-        </td>
         <td style="text-align:right;">
           <div class="btn-action-group" style="justify-content:flex-end;">
-            <button class="btn-icon-sm btn-edit" onclick="openEditUserModal('${u.id}')" title="Edit Credentials & Profile">
+            <button class="btn-icon-sm btn-edit" onclick="openEditUserModal('${u.id}')" title="Edit Profile & Role">
               <svg width="13" height="13" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M11 5H6a2 2 0 00-2 2v11a2 2 0 002 2h11a2 2 0 002-2v-5m-1.414-9.414a2 2 0 112.828 2.828L11.828 15H9v-2.828l8.586-8.586z"/></svg>
               Edit
             </button>
@@ -933,14 +923,12 @@ function handleRoleChange(role) {
 }
 
 function openAddUserModal() {
-  document.getElementById('user-modal-title').textContent = 'Add New User & Account';
+  document.getElementById('user-modal-title').textContent = 'Add New User Account';
   document.getElementById('user-form-mode').value = 'add';
   document.getElementById('user-form-id').value = '';
 
   document.getElementById('user-form-name').value = '';
   document.getElementById('user-form-email').value = '';
-  document.getElementById('user-form-password').value = 'password123';
-  resetPasswordField('user-form-password');
   document.getElementById('user-form-role').value = 'faculty';
   document.getElementById('user-form-department').value = 'CSE(AIML)';
   document.getElementById('user-form-designation').value = 'Assistant Professor';
@@ -967,14 +955,12 @@ function openEditUserModal(userId) {
     return;
   }
 
-  document.getElementById('user-modal-title').textContent = `Edit Credentials: ${user.name}`;
+  document.getElementById('user-modal-title').textContent = `Edit User: ${user.name}`;
   document.getElementById('user-form-mode').value = 'edit';
   document.getElementById('user-form-id').value = user.id;
 
   document.getElementById('user-form-name').value = user.name || '';
   document.getElementById('user-form-email').value = user.email || '';
-  document.getElementById('user-form-password').value = user.password || 'password123';
-  resetPasswordField('user-form-password');
   document.getElementById('user-form-role').value = user.role || 'faculty';
   document.getElementById('user-form-department').value = user.department || 'CSE(AIML)';
   document.getElementById('user-form-designation').value = user.designation || '';
@@ -1010,13 +996,16 @@ async function handleSaveUserSubmit(e) {
   const payload = {
     name: document.getElementById('user-form-name').value.trim(),
     email: document.getElementById('user-form-email').value.trim().toLowerCase(),
-    password: document.getElementById('user-form-password').value.trim() || 'password123',
     role: document.getElementById('user-form-role').value,
     department: document.getElementById('user-form-department').value,
     designation: document.getElementById('user-form-designation').value.trim(),
     phone: document.getElementById('user-form-phone').value.trim(),
     avatar: document.getElementById('user-form-avatar-data').value.trim() || DEFAULT_AVATAR
   };
+
+  if (mode === 'add') {
+    payload.password = 'password123';
+  }
 
   if (!payload.name || !payload.email) {
     alert('Name and Email are required.');

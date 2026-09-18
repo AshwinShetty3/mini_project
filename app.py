@@ -1,4 +1,5 @@
 import os
+import copy
 from pathlib import Path
 from typing import Optional, List
 from fastapi import FastAPI, Request, HTTPException, Form, UploadFile, File
@@ -344,7 +345,13 @@ async def get_calendar_events():
 @app.get("/api/admin/faculty")
 async def list_admin_users():
     store = get_store()
-    return store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
+    accounts = store.get_all_accounts() if hasattr(store, "get_all_accounts") else store.get_users()
+    safe_accounts = []
+    for acc in accounts:
+        item = copy.deepcopy(acc)
+        item.pop("password", None)
+        safe_accounts.append(item)
+    return safe_accounts
 
 @app.get("/api/admin/users/{user_id}")
 async def get_admin_user(user_id: str):
@@ -352,7 +359,9 @@ async def get_admin_user(user_id: str):
     user = store.get_user_by_id(user_id)
     if not user:
         raise HTTPException(status_code=404, detail="User not found")
-    return user
+    safe_user = copy.deepcopy(user)
+    safe_user.pop("password", None)
+    return safe_user
 
 @app.post("/api/admin/users")
 @app.post("/api/admin/faculty")
