@@ -1,0 +1,25 @@
+# Environment variables & secrets (CRITICAL: Do not commit)
+.env
+.env.local
+
+# Python virtual environment
+.venv/
+env/
+venv/
+ENV/
+
+# Python cache & compiled files
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+
+# Local temporary or state files
+data.json
+*.log
+
+# IDE & OS files
+.vscode/
+.idea/
+.DS_Store
+Thumbs.db

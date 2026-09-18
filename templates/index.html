@@ -1,0 +1,1477 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>FacultyFlow — Leave Management & Academic Scheduling System</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/static/css/style.css">
+</head>
+<body>
+
+<!-- ===================================================================
+     SCREEN 1: LOGIN PAGE (Standalone Fullscreen View)
+     =================================================================== -->
+<div id="view-login" style="display: none;">
+  <div class="login-split-container">
+    <div class="login-hero-side">
+      <div class="login-hero-brand">
+        <div class="logo-icon-badge">
+          <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2">
+            <path d="M3 21h18M4 18h16M6 18V9M10 18V9M14 18V9M18 18V9M12 3l9 6H3l9-6z"/>
+          </svg>
+        </div>
+        <h1>FacultyFlow</h1>
+      </div>
+      <div class="login-hero-center">
+        <h2>Leave Management &<br>Academic Scheduling System</h2>
+        <div class="college-tag">KLS VDIT, Haliyal</div>
+        <p class="subtitle">Simpler Approvals · Smarter Scheduling · Better Academic Flow</p>
+      </div>
+      <div class="login-hero-footer">
+        © 2026 Karnatak Law Society's Vishwanathrao Deshpande Institute of Technology
+      </div>
+    </div>
+    
+    <div class="login-form-side">
+      <div class="login-card">
+        <div class="login-card-header">
+          <h2>Welcome Back!</h2>
+          <p>Login to your account</p>
+        </div>
+        
+        <form id="login-form-el" onsubmit="handleLoginSubmit(event)">
+          <div class="form-group">
+            <label class="form-label">Email / Username</label>
+            <input type="text" id="login-email" class="form-control" placeholder="Enter your college email or username" value="ananya@klsvdit.ac.in" required>
+          </div>
+          <div class="form-group" style="position: relative;">
+            <label class="form-label">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" value="••••••••" required>
+            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('login-password')">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+            </button>
+          </div>
+          <div id="login-error-msg" style="display:none; color:#dc2626; font-size:12px; margin-bottom:12px; font-weight:600; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:8px 10px;"></div>
+          <div class="form-row-check">
+            <label class="form-check">
+              <input type="checkbox" checked>
+              <span>Remember me</span>
+            </label>
+            <a href="#" class="forgot-link">Forgot password?</a>
+          </div>
+          <button type="submit" id="login-submit-btn" class="btn btn-navy-login">Login</button>
+          <div class="login-register-link">
+            Don't have an account? <a href="#" onclick="alert('Please contact your administrator to provision an institutional account.');">Contact Admin</a>
+          </div>
+
+          <!-- Quick 1-Click Role Login for Testing All User Types -->
+          <div class="demo-login-box">
+            <p class="demo-login-title">Quick Test Login (Click to preview user type):</p>
+            <div class="demo-pills-row">
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('student')">👨‍🎓 Student</button>
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('faculty')">👩‍🏫 Faculty</button>
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('hod')">👨‍💼 HOD</button>
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('dean')">🎓 Dean</button>
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('principal')">🏛️ Principal</button>
+              <button type="button" class="demo-pill-chip" onclick="quickLogin('admin')">⚙️ Admin</button>
+            </div>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ===================================================================
+     MAIN APPLICATION SHELL (Sidebar + Views 2 - 16)
+     =================================================================== -->
+<div id="app-root">
+
+  <!-- Left Sidebar -->
+  <aside class="sidebar">
+    <div class="sidebar-header">
+      <a href="#" class="brand" onclick="const defV = (AppState.currentUser) ? getDefaultViewForRole(AppState.currentUser.role) : 'view-faculty-dashboard'; switchView(defV);">
+        <div class="brand-icon">
+          <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="#ffffff" stroke-width="2.2">
+            <path d="M3 21h18M4 18h16M6 18V9M10 18V9M14 18V9M18 18V9M12 3l9 6H3l9-6z"/>
+          </svg>
+        </div>
+        <div class="brand-text">
+          <h1>FacultyFlow</h1>
+          <p>KLS VDIT, Haliyal</p>
+        </div>
+      </a>
+    </div>
+
+    <!-- MongoDB Atlas Cloud Status Badge -->
+    <div class="sidebar-db-badge">
+      <span class="db-live-dot"></span>
+      <span>MongoDB Atlas Connected</span>
+    </div>
+
+    <!-- Active User Profile Card in Sidebar -->
+    <div class="sidebar-user" onclick="handleUserCardClick()">
+      <img id="sidebar-user-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" class="user-avatar" alt="Avatar">
+      <div class="user-info">
+        <div id="sidebar-user-name" class="user-name">Dr. Ananya</div>
+        <div id="sidebar-user-role" class="user-role-tag">Faculty - CSE(AIML)</div>
+      </div>
+    </div>
+
+    <!-- Navigation Menu Items -->
+    <nav class="sidebar-nav" id="sidebar-nav-container">
+      <!-- Dynamic Nav Items updated based on role in app.js -->
+    </nav>
+
+    <!-- Sidebar Footer -->
+    <div class="sidebar-footer">
+      <a class="nav-link" onclick="switchView('view-faculty-dashboard')">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        <span>Settings</span>
+      </a>
+      <a class="nav-link" onclick="handleLogout()">
+        <svg fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/></svg>
+        <span>Logout</span>
+      </a>
+    </div>
+  </aside>
+
+  <!-- Main Content Wrapper -->
+  <div class="main-wrapper">
+    <main class="content-body">
+
+      <!-- =============================================================
+           STUDENT DASHBOARD (Student Role)
+           ============================================================= -->
+      <section id="view-student-dashboard" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Good Morning, Rohit 👋</h2>
+            <p>Student Dashboard · 5th Sem CSE(AIML) · Sec A</p>
+          </div>
+          <div class="page-date-indicator">
+            <span>Tue, 16 Sep 2026</span>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card" style="border-left: 3px solid #2563eb;">
+            <div class="kpi-card-info">
+              <h4>Classes Today</h4>
+              <div class="kpi-value" style="color: #2563eb;">5</div>
+            </div>
+            <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-pending">
+            <div class="kpi-card-info">
+              <h4>Faculty on Leave</h4>
+              <div class="kpi-value">1</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-approved">
+            <div class="kpi-card-info">
+              <h4>Substitutes Assigned</h4>
+              <div class="kpi-value">1</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-affected">
+            <div class="kpi-card-info">
+              <h4>My Attendance</h4>
+              <div class="kpi-value">88%</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <div class="dashboard-widgets-grid" style="grid-template-columns: 1.8fr 1fr;">
+          <!-- Left: Today's Lectures with Teacher & Substitute status -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 14px;">Today's Classes & Teacher Status</div>
+            <div class="table-responsive">
+              <table class="custom-table">
+                <thead>
+                  <tr>
+                    <th>Time</th>
+                    <th>Subject</th>
+                    <th>Teacher</th>
+                    <th>Status</th>
+                    <th>Room</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  <tr>
+                    <td style="color:var(--text-muted); font-weight:600;">09:00 - 10:00</td>
+                    <td><strong>CN (Computer Networks)</strong></td>
+                    <td>Dr. Ananya</td>
+                    <td><span class="badge badge-approved">Sub: Dr. Ramesh</span></td>
+                    <td><span style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-weight:700;">204</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-muted); font-weight:600;">10:00 - 11:00</td>
+                    <td><strong>TOC (Theory of Comp)</strong></td>
+                    <td>Dr. B</td>
+                    <td><span class="badge badge-blue">Regular Class</span></td>
+                    <td><span style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-weight:700;">204</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-muted); font-weight:600;">11:00 - 12:00</td>
+                    <td><strong>UNIX System Prog</strong></td>
+                    <td>Dr. C</td>
+                    <td><span class="badge badge-blue">Regular Class</span></td>
+                    <td><span style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-weight:700;">301</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-muted); font-weight:600;">12:00 - 01:00</td>
+                    <td><strong>Library Hour (LB)</strong></td>
+                    <td>Dept. Faculty</td>
+                    <td><span class="badge badge-blue">Self Study</span></td>
+                    <td><span style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-weight:700;">204</span></td>
+                  </tr>
+                  <tr>
+                    <td style="color:var(--text-muted); font-weight:600;">02:00 - 03:00</td>
+                    <td><strong>Research Methodology</strong></td>
+                    <td>Dr. D</td>
+                    <td><span class="badge badge-blue">Regular Class</span></td>
+                    <td><span style="background:#f1f5f9; padding:2px 7px; border-radius:4px; font-weight:700;">302</span></td>
+                  </tr>
+                </tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- Right: Student Notice Box & Quick Links -->
+          <div>
+            <div class="card" style="margin-bottom: 16px;">
+              <div class="card-title" style="margin-bottom: 10px;">Class Notification</div>
+              <div style="background: #eff6ff; border: 1px solid #bfdbfe; border-radius: 8px; padding: 12px; font-size: 12px; color: #1e40af; line-height: 1.5;">
+                📢 <strong>Substitute Update:</strong> 09:00 AM Computer Networks lecture is covered by Dr. Ramesh in Room 204. No classes canceled.
+              </div>
+            </div>
+
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 12px;">Quick Access</div>
+              <div style="display: flex; flex-direction: column; gap: 8px;">
+                <button class="btn-action-tile" style="width: 100%; justify-content: flex-start;" onclick="switchView('view-timetable')">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>View Weekly Timetable</span>
+                </button>
+                <button class="btn-action-tile" style="width: 100%; justify-content: flex-start;" onclick="switchView('view-calendar')">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                  <span>College Academic Calendar</span>
+                </button>
+                <button class="btn-action-tile" style="width: 100%; justify-content: flex-start;" onclick="switchView('view-notifications')">
+                  <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 17h5l-1.405-1.405A2.032 2.032 0 0118 14.158V11a6.002 6.002 0 00-4-5.659V5a2 2 0 10-4 0v.341C7.67 6.165 6 8.388 6 11v3.159c0 .538-.214 1.055-.595 1.436L4 17h5m6 0v1a3 3 0 11-6 0v-1m6 0H9"/></svg>
+                  <span>Class Alerts & Notifications</span>
+                </button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 2: FACULTY DASHBOARD
+           ============================================================= -->
+      <section id="view-faculty-dashboard" class="view-section active">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Good Morning, Dr. Ananya 👋</h2>
+            <p>Faculty Dashboard</p>
+          </div>
+          <div class="page-date-indicator">
+            <span>Tue, 16 Sep 2026</span>
+          </div>
+        </div>
+
+        <!-- 4 KPI Cards -->
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-pending">
+            <div class="kpi-card-info">
+              <h4>Pending</h4>
+              <div id="dash-pending-count" class="kpi-value">2</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-approved">
+            <div class="kpi-card-info">
+              <h4>Approved</h4>
+              <div id="dash-approved-count" class="kpi-value">5</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-rejected">
+            <div class="kpi-card-info">
+              <h4>Rejected</h4>
+              <div id="dash-rejected-count" class="kpi-value">1</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card kpi-affected">
+            <div class="kpi-card-info">
+              <h4>Classes Affected</h4>
+              <div id="dash-affected-count" class="kpi-value">3</div>
+            </div>
+            <div class="kpi-icon">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Dashboard Central Widgets -->
+        <div class="dashboard-widgets-grid">
+          <!-- Leave Slot Availability Gauge -->
+          <div class="card slot-gauge-card">
+            <div class="card-title">Leave Slot Availability</div>
+            <div class="gauge-circle-container">
+              <svg id="dash-slot-svg" class="gauge-circle-svg" viewBox="0 0 120 120">
+                <circle class="gauge-circle-bg" cx="60" cy="60" r="48" />
+                <circle class="gauge-circle-fill" cx="60" cy="60" r="48" />
+              </svg>
+              <div class="gauge-text-overlay">
+                <div id="dash-slot-text" class="gauge-ratio">1/3</div>
+                <div class="gauge-label">Slots available</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Current Request Status -->
+          <div class="card current-request-card">
+            <div class="card-title" style="margin-bottom: 14px;">Your Current Request</div>
+            <div class="current-request-header">
+              <div class="req-id-group">
+                <h3 id="dash-current-req-id">#LV1026</h3>
+              </div>
+              <span id="dash-current-req-status" class="badge badge-queue">Waiting for Slot</span>
+            </div>
+            <div class="current-req-details-clean">
+              <p class="req-queue-line">Queue Position: <strong id="dash-current-req-queue">#2</strong></p>
+              <p class="req-date-line">Submitted on: <span id="dash-current-req-date">15 Sep 2026</span></p>
+            </div>
+          </div>
+        </div>
+
+        <!-- Quick Actions Row -->
+        <div class="quick-actions-section">
+          <div class="quick-actions-title">Quick Actions</div>
+          <div class="quick-actions-grid">
+            <button class="btn-action-tile" onclick="switchView('view-apply-leave')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24"><path d="M12 4v16m8-8H4"/></svg>
+              <span>Apply Leave</span>
+            </button>
+            <button class="btn-action-tile" onclick="switchView('view-my-leaves')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"/></svg>
+              <span>My Leaves</span>
+            </button>
+            <button class="btn-action-tile" onclick="switchView('view-timetable')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+              <span>Timetable</span>
+            </button>
+            <button class="btn-action-tile" onclick="switchView('view-slot-status')">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+              <span>View Queue</span>
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 3: APPLY LEAVE PAGE (Faculty)
+           ============================================================= -->
+      <section id="view-apply-leave" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Apply Leave</h2>
+          </div>
+        </div>
+
+        <div class="apply-leave-grid">
+          <!-- Left: Application Form -->
+          <div class="card">
+            <form id="apply-leave-form" onsubmit="handleApplyLeaveSubmit(event)">
+              <div class="form-group">
+                <label class="form-label">Leave Type</label>
+                <select id="apply-leave-type" name="leave_type" class="form-control" required>
+                  <option value="CL" selected>Casual Leave (CL)</option>
+                  <option value="EL">Earned Leave (EL)</option>
+                  <option value="ML">Medical Leave (ML)</option>
+                  <option value="OD">On Duty (OD)</option>
+                </select>
+              </div>
+
+              <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 14px;">
+                <div class="form-group">
+                  <label class="form-label">From Date</label>
+                  <input type="date" name="from_date" class="form-control" value="2026-09-21" required>
+                </div>
+                <div class="form-group">
+                  <label class="form-label">To Date</label>
+                  <input type="date" name="to_date" class="form-control" value="2026-09-21" required>
+                </div>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Reason</label>
+                <textarea name="reason" class="form-control" rows="3" placeholder="Enter reason for leave..." required></textarea>
+              </div>
+
+              <div class="form-group">
+                <label class="form-label">Upload Supporting Document (Optional)</label>
+                <div style="display:flex; align-items:center; gap:8px;">
+                  <input type="file" name="supporting_doc" class="form-control" accept=".pdf,.png,.jpg,.jpeg">
+                </div>
+                <small style="font-size: 11px; color: var(--text-muted); margin-top: 3px; display: block;">(PDF, JPG, PNG - Max 5MB)</small>
+              </div>
+
+              <button type="submit" class="btn btn-navy-login" style="width: 100%; margin-top: 8px;">
+                Submit Leave Application
+              </button>
+            </form>
+          </div>
+
+          <!-- Right: Conflict Inspector & Slot Status -->
+          <div>
+            <!-- Slot Availability Mini-Widget -->
+            <div class="card slot-gauge-card" style="margin-bottom: 18px;">
+              <div class="card-title">Leave Slot Availability</div>
+              <div class="gauge-circle-container" style="width: 110px; height: 110px;">
+                <svg id="apply-slot-svg" class="gauge-circle-svg" viewBox="0 0 120 120">
+                  <circle class="gauge-circle-bg" cx="60" cy="60" r="48" />
+                  <circle class="gauge-circle-fill" cx="60" cy="60" r="48" />
+                </svg>
+                <div class="gauge-text-overlay">
+                  <div id="apply-slot-text" class="gauge-ratio" style="font-size: 20px;">1/3</div>
+                  <div class="gauge-label" style="font-size: 10px;">available</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Auto-detected Classes Affected -->
+            <div class="card">
+              <div class="card-title" style="margin-bottom: 12px;">Classes Affected (3)</div>
+              <div class="classes-affected-list">
+                <div class="class-affected-item">
+                  <div class="class-info-left">
+                    <span class="class-sub-badge">CN</span>
+                    <div class="class-details">
+                      <h5>09:00 - 10:00</h5>
+                      <p>5th Sem A</p>
+                    </div>
+                  </div>
+                  <span class="badge badge-affected-red">Affected</span>
+                </div>
+
+                <div class="class-affected-item">
+                  <div class="class-info-left">
+                    <span class="class-sub-badge">TOC</span>
+                    <div class="class-details">
+                      <h5>10:00 - 11:00</h5>
+                      <p>5th Sem A</p>
+                    </div>
+                  </div>
+                  <span class="badge badge-affected-red">Affected</span>
+                </div>
+
+                <div class="class-affected-item">
+                  <div class="class-info-left">
+                    <span class="class-sub-badge">UNIX</span>
+                    <div class="class-details">
+                      <h5>2:00 - 3:00</h5>
+                      <p>5th Sem A</p>
+                    </div>
+                  </div>
+                  <span class="badge badge-affected-red">Affected</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 4: SLOT & QUEUE STATUS (Faculty)
+           ============================================================= -->
+      <section id="view-slot-status" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Leave Request Status</h2>
+          </div>
+        </div>
+
+        <!-- Red/Amber Queue Alert Banner -->
+        <div class="queue-alert-banner">
+          <svg width="18" height="18" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+          <div>
+            <strong>No slots available at the moment.</strong><br>
+            You are in the waiting queue. You will be notified when a slot becomes available.
+          </div>
+        </div>
+
+        <div class="card" style="margin-bottom: 18px;">
+          <div class="current-request-header" style="border:none; padding-bottom:0; margin-bottom:12px;">
+            <div>
+              <h3 style="font-size: 16px; font-weight: 800;">Request ID: LV1026</h3>
+            </div>
+            <span class="badge badge-queue">Waiting for Slot</span>
+          </div>
+
+          <div class="req-details-grid-clean">
+            <div><strong>Date:</strong> 21 September 2026</div>
+            <div><strong>Leave Type:</strong> Casual Leave (CL)</div>
+            <div><strong>Reason:</strong> Personal work</div>
+          </div>
+        </div>
+
+        <!-- Queue Position Big Callout Card -->
+        <div class="card queue-pos-card">
+          <div class="queue-pos-label">Your Queue Position</div>
+          <div class="queue-pos-huge">#2</div>
+          <div class="queue-pos-sub">2 requests ahead of you</div>
+        </div>
+
+        <!-- Approval Stepper Card -->
+        <div class="card" style="margin-top: 18px;">
+          <div class="card-title" style="margin-bottom: 24px;">Approval Progress</div>
+          <div class="stepper-container">
+            <div class="stepper-line"></div>
+            
+            <div class="stepper-step completed">
+              <div class="step-node">✓</div>
+              <div class="step-label">Submitted</div>
+            </div>
+            <div class="stepper-step active">
+              <div class="step-node">2</div>
+              <div class="step-label">Waiting for Slot</div>
+            </div>
+            <div class="stepper-step">
+              <div class="step-node">3</div>
+              <div class="step-label">HOD Pending</div>
+            </div>
+            <div class="stepper-step">
+              <div class="step-node">4</div>
+              <div class="step-label">Dean Pending</div>
+            </div>
+            <div class="stepper-step">
+              <div class="step-node">5</div>
+              <div class="step-label">Principal Approved</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 5: NOTIFICATION PANEL (Faculty)
+           ============================================================= -->
+      <section id="view-notifications" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Notifications</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tabs-nav-clean">
+            <button class="tab-pill active" onclick="filterNotificationsTab(this, 'all')">All (8)</button>
+            <button class="tab-pill" onclick="filterNotificationsTab(this, 'unread')">Unread (3)</button>
+            <button class="tab-pill" onclick="filterNotificationsTab(this, 'read')">Read (5)</button>
+          </div>
+
+          <div id="notifications-container" class="notification-list-clean">
+            <!-- Screen 5 items populated identically to screenshot -->
+            <div class="notif-item-clean">
+              <div class="notif-icon-circle notif-icon-orange">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+              </div>
+              <div class="notif-content-clean">
+                <h4>A leave slot has become available!</h4>
+                <p>Your request can now proceed for approval</p>
+              </div>
+              <div class="notif-time-clean">10:24 AM</div>
+            </div>
+
+            <div class="notif-item-clean">
+              <div class="notif-icon-circle notif-icon-red">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-3L13.732 4c-.77-1.333-2.694-1.333-3.464 0L3.34 16c-.77 1.333.192 3 1.732 3z"/></svg>
+              </div>
+              <div class="notif-content-clean">
+                <h4>Your queue position changed</h4>
+                <p>You are now #2 in the leave request queue</p>
+              </div>
+              <div class="notif-time-clean">09:42 AM</div>
+            </div>
+
+            <div class="notif-item-clean">
+              <div class="notif-icon-circle notif-icon-green">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div class="notif-content-clean">
+                <h4>Leave request submitted</h4>
+                <p>Your leave request (#LV1026) has been submitted successfully</p>
+              </div>
+              <div class="notif-time-clean">Yesterday</div>
+            </div>
+
+            <div class="notif-item-clean">
+              <div class="notif-icon-circle notif-icon-green">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M5 13l4 4L19 7"/></svg>
+              </div>
+              <div class="notif-content-clean">
+                <h4>HOD approved your leave</h4>
+                <p>Leave request (LV1013) has been approved by HOD</p>
+              </div>
+              <div class="notif-time-clean">3 days ago</div>
+            </div>
+
+            <div class="notif-item-clean">
+              <div class="notif-icon-circle notif-icon-red">
+                <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5"><path d="M6 18L18 6M6 6l12 12"/></svg>
+              </div>
+              <div class="notif-content-clean">
+                <h4>Dean rejected your leave</h4>
+                <p>Your leave request (LV1012) has been rejected by Dean</p>
+              </div>
+              <div class="notif-time-clean">5 days ago</div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 6: MY LEAVE REQUESTS (Faculty)
+           ============================================================= -->
+      <section id="view-my-leaves" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>My Leave Requests</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="tabs-nav-clean">
+            <button class="tab-pill active" onclick="filterMyLeavesTab(this, 'all')">All</button>
+            <button class="tab-pill" onclick="filterMyLeavesTab(this, 'pending')">Pending</button>
+            <button class="tab-pill" onclick="filterMyLeavesTab(this, 'approved')">Approved</button>
+            <button class="tab-pill" onclick="filterMyLeavesTab(this, 'rejected')">Rejected</button>
+            <button class="tab-pill" onclick="filterMyLeavesTab(this, 'canceled')">Canceled</button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="my-leaves-tbody">
+                <!-- Populated dynamically to match Screen 6 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 7: TIMETABLE (Faculty)
+           ============================================================= -->
+      <section id="view-timetable" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>My Timetable</h2>
+          </div>
+          <div class="week-nav-control">
+            <span>Week 15 (14 - 20 Sep)</span>
+            <div class="week-arrow-btns">
+              <button class="btn-arrow">&lt;</button>
+              <button class="btn-arrow">&gt;</button>
+            </div>
+          </div>
+        </div>
+
+        <div class="timetable-days-strip">
+          <button class="tt-day-tab active" data-day="Mon" onclick="loadTimetable('Mon')">Mon<br><span class="day-num">15</span></button>
+          <button class="tt-day-tab" data-day="Tue" onclick="loadTimetable('Tue')">Tue<br><span class="day-num">16</span></button>
+          <button class="tt-day-tab" data-day="Wed" onclick="loadTimetable('Wed')">Wed<br><span class="day-num">17</span></button>
+          <button class="tt-day-tab" data-day="Thu" onclick="loadTimetable('Thu')">Thu<br><span class="day-num">18</span></button>
+          <button class="tt-day-tab" data-day="Fri" onclick="loadTimetable('Fri')">Fri<br><span class="day-num">19</span></button>
+        </div>
+
+        <div class="card" style="margin-top: 14px;">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Subject</th>
+                  <th>Class</th>
+                  <th>Room</th>
+                </tr>
+              </thead>
+              <tbody id="timetable-tbody">
+                <!-- Screen 7 timetable data -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 8: LEAVE SLOT QUEUE (HOD View)
+           ============================================================= -->
+      <section id="view-leave-slot-queue" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Leave Slot Management</h2>
+          </div>
+        </div>
+
+        <div class="kpi-grid" style="grid-template-columns: repeat(3, 1fr); margin-bottom: 22px;">
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>Total Slots</h4>
+              <div id="slot-total-val" class="kpi-value" style="color: var(--text-dark);">3</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>Occupied</h4>
+              <div id="slot-occupied-val" class="kpi-value" style="color: var(--text-dark);">3</div>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>Available</h4>
+              <div id="slot-available-val" class="kpi-value" style="color: #ef4444;">0</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="card-title" style="margin-bottom: 14px;">Current Queue</div>
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>#</th>
+                  <th>Faculty Name</th>
+                  <th>Leave Date</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="slot-queue-tbody">
+                <!-- Screen 8 Queue Data -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 9: HOD PENDING APPROVALS
+           ============================================================= -->
+      <section id="view-hod-approvals" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Pending Leave Requests</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <!-- Filter Controls Strip -->
+          <div class="filter-controls-strip">
+            <div class="filter-item">
+              <label>Department:</label>
+              <select id="hod-dept-filter" class="form-control-sm" onchange="loadHODApprovals()">
+                <option value="CSE(AIML)" selected>CSE(AIML)</option>
+                <option value="ECE">ECE</option>
+                <option value="ME">ME</option>
+                <option value="All">All</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Leave Type:</label>
+              <select class="form-control-sm">
+                <option>All</option>
+                <option>CL</option>
+                <option>ML</option>
+                <option>OD</option>
+              </select>
+            </div>
+            <div class="filter-item">
+              <label>Status:</label>
+              <select class="form-control-sm">
+                <option>Pending</option>
+                <option>All</option>
+              </select>
+            </div>
+            <div class="filter-search-box">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" placeholder="Search by name..." class="search-input-clean">
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Faculty Name</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Reason</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="hod-approvals-tbody">
+                <!-- Rendered by JS matching Screen 9 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 10: DEAN APPROVAL QUEUE
+           ============================================================= -->
+      <section id="view-dean-queue" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Dean Approval Queue</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Faculty</th>
+                  <th>Department</th>
+                  <th>Date</th>
+                  <th>Status</th>
+                  <th>Actions</th>
+                </tr>
+              </thead>
+              <tbody id="dean-queue-tbody">
+                <!-- Rendered by JS matching Screen 10 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 11: PRINCIPAL DASHBOARD
+           ============================================================= -->
+      <section id="view-principal-dashboard" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Principal Dashboard</h2>
+          </div>
+        </div>
+
+        <div class="kpi-grid">
+          <div class="kpi-card kpi-pending">
+            <div class="kpi-card-info">
+              <h4>Pending Final Approval</h4>
+              <div id="prin-pending-count" class="kpi-value">7</div>
+            </div>
+          </div>
+          <div class="kpi-card kpi-approved">
+            <div class="kpi-card-info">
+              <h4>Approved Today</h4>
+              <div id="prin-approved-count" class="kpi-value">12</div>
+            </div>
+          </div>
+          <div class="kpi-card kpi-rejected">
+            <div class="kpi-card-info">
+              <h4>Rejected Today</h4>
+              <div id="prin-rejected-count" class="kpi-value">1</div>
+            </div>
+          </div>
+          <div class="kpi-card kpi-affected">
+            <div class="kpi-card-info">
+              <h4>Faculty on Leave</h4>
+              <div id="prin-faculty-leave" class="kpi-value">8</div>
+            </div>
+          </div>
+        </div>
+
+        <div class="principal-charts-grid">
+          <!-- Leave Type Distribution -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 16px;">Leave Type Distribution</div>
+            <div class="donut-chart-container">
+              <svg width="140" height="140" viewBox="0 0 100 100">
+                <circle cx="50" cy="50" r="36" fill="transparent" stroke="#2563eb" stroke-width="16" stroke-dasharray="101.7 226" stroke-dashoffset="0" />
+                <circle cx="50" cy="50" r="36" fill="transparent" stroke="#0ea5e9" stroke-width="16" stroke-dasharray="56.5 226" stroke-dashoffset="-101.7" />
+                <circle cx="50" cy="50" r="36" fill="transparent" stroke="#10b981" stroke-width="16" stroke-dasharray="45.2 226" stroke-dashoffset="-158.2" />
+                <circle cx="50" cy="50" r="36" fill="transparent" stroke="#f59e0b" stroke-width="16" stroke-dasharray="22.6 226" stroke-dashoffset="-203.4" />
+                <text x="50" y="49" text-anchor="middle" font-size="14" font-weight="900" fill="#0f172a">48</text>
+                <text x="50" y="61" text-anchor="middle" font-size="7" font-weight="700" fill="#64748b">Total</text>
+              </svg>
+              <div class="donut-legend-clean">
+                <div class="legend-item"><span class="legend-dot" style="background:#2563eb;"></span> CL: 45%</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#0ea5e9;"></span> ML: 25%</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#10b981;"></span> OD: 20%</div>
+                <div class="legend-item"><span class="legend-dot" style="background:#f59e0b;"></span> Other: 10%</div>
+              </div>
+            </div>
+          </div>
+
+          <!-- Recent Approvals -->
+          <div class="card">
+            <div class="card-title" style="margin-bottom: 16px;">Recent Approvals</div>
+            <div id="prin-recent-approvals" class="recent-approvals-list-clean">
+              <div class="recent-app-row">
+                <span class="app-faculty">Dr. A</span>
+                <span class="app-date">21 Sep 2026</span>
+                <span class="app-check">✓</span>
+              </div>
+              <div class="recent-app-row">
+                <span class="app-faculty">Dr. E</span>
+                <span class="app-date">22 Sep 2026</span>
+                <span class="app-check">✓</span>
+              </div>
+              <div class="recent-app-row">
+                <span class="app-faculty">Dr. F</span>
+                <span class="app-date">23 Sep 2026</span>
+                <span class="app-check">✓</span>
+              </div>
+              <div class="recent-app-row">
+                <span class="app-faculty">Dr. G</span>
+                <span class="app-date">25 Sep 2026</span>
+                <span class="app-check">✓</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 12: COLLEGE CALENDAR
+           ============================================================= -->
+      <section id="view-calendar" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>College Calendar</h2>
+          </div>
+          <div class="cal-month-nav">
+            <button class="btn-arrow" onclick="alert('Previous month')">&lt;</button>
+            <span style="font-weight: 700; font-size: 13.5px; color: var(--text-dark);">September 2026</span>
+            <button class="btn-arrow" onclick="alert('Next month')">&gt;</button>
+          </div>
+        </div>
+
+        <div class="calendar-layout-grid">
+          <!-- Calendar Grid Card -->
+          <div class="card">
+            <div class="calendar-grid" style="margin-bottom: 6px;">
+              <div class="cal-day-header">Su</div>
+              <div class="cal-day-header">Mo</div>
+              <div class="cal-day-header">Tu</div>
+              <div class="cal-day-header">We</div>
+              <div class="cal-day-header">Th</div>
+              <div class="cal-day-header">Fr</div>
+              <div class="cal-day-header">Sa</div>
+            </div>
+
+            <!-- Day Cells -->
+            <div id="calendar-grid-cells" class="calendar-grid">
+              <!-- Rendered by JS -->
+            </div>
+
+            <div class="cal-legend-bar-clean">
+              <div class="cal-legend-item"><span class="cal-density-dot" style="background:#cbd5e1;"></span> No Leave</div>
+              <div class="cal-legend-item"><span class="cal-density-dot" style="background:#f59e0b;"></span> 1-2 Leaves</div>
+              <div class="cal-legend-item"><span class="cal-density-dot" style="background:#2563eb;"></span> 3+ Leaves</div>
+              <div class="cal-legend-item"><span class="cal-density-square" style="background:#1d4ed8;"></span> Today</div>
+            </div>
+          </div>
+
+          <!-- Day Details Sidebar Card (Screen 12) -->
+          <div class="card" id="cal-selected-details">
+            <h3 style="font-size: 15px; font-weight: 800; margin-bottom: 14px;">21 September 2026</h3>
+            <div class="cal-stat-line">
+              <span>Faculty on Leave:</span>
+              <strong>4</strong>
+            </div>
+            <div class="cal-stat-line">
+              <span>Classes Affected:</span>
+              <strong>7</strong>
+            </div>
+            <div class="cal-stat-line">
+              <span>Substitutes Assigned:</span>
+              <strong>3</strong>
+            </div>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 20px;" onclick="switchView('view-substitutes')">
+              View Details
+            </button>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 13: SUBSTITUTE MANAGEMENT (HOD)
+           ============================================================= -->
+      <section id="view-substitutes" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Substitute Requests</h2>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="substitute-filter-bar">
+            <div class="sub-filter-item">
+              <label>Date</label>
+              <input type="text" class="form-control-sm" value="21/09/2026" style="width: 110px;">
+            </div>
+            <div class="sub-filter-item">
+              <label>Subject</label>
+              <select class="form-control-sm" style="width: 100px;">
+                <option>All</option>
+                <option>CN</option>
+                <option>TOC</option>
+                <option>UNIX</option>
+              </select>
+            </div>
+            <div class="sub-filter-item">
+              <label>Class</label>
+              <select class="form-control-sm" style="width: 90px;">
+                <option>All</option>
+                <option>5A</option>
+                <option>5B</option>
+              </select>
+            </div>
+            <button class="btn btn-primary btn-sm" style="height: 32px;" onclick="alert('Finding available faculty...')">
+              Find Available Faculty
+            </button>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>Faculty</th>
+                  <th>Subject</th>
+                  <th>Class</th>
+                  <th>Time</th>
+                  <th>Status</th>
+                  <th>Action</th>
+                </tr>
+              </thead>
+              <tbody id="substitutes-tbody">
+                <!-- Screen 13 data rendered by JS -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 14: LEAVE HISTORY (Faculty)
+           ============================================================= -->
+      <section id="view-leave-history" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Leave History</h2>
+          </div>
+          <div style="display: flex; gap: 8px;">
+            <select class="form-control-sm" style="width: auto;">
+              <option>2026</option>
+              <option>2025</option>
+            </select>
+            <select id="history-type-filter" class="form-control-sm" style="width: auto;" onchange="loadLeaveHistory()">
+              <option value="All">All</option>
+              <option value="CL">CL</option>
+              <option value="EL">EL</option>
+              <option value="ML">ML</option>
+              <option value="OD">OD</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="card">
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th>ID</th>
+                  <th>Date</th>
+                  <th>Type</th>
+                  <th>Status</th>
+                </tr>
+              </thead>
+              <tbody id="history-tbody">
+                <!-- Rendered dynamically matching Screen 14 -->
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 15: LEAVE BALANCE (Faculty)
+           ============================================================= -->
+      <section id="view-leave-balance" class="view-section">
+        <div class="page-header">
+          <div class="page-title-group">
+            <h2>Leave Balance</h2>
+          </div>
+        </div>
+
+        <div class="balance-grid">
+          <!-- CL -->
+          <div class="balance-card">
+            <h4>Casual Leave (CL)</h4>
+            <div class="balance-counts-clean">
+              <div class="bal-col">
+                <span class="bal-sub">Used</span>
+                <span class="bal-num">4</span>
+              </div>
+              <div class="bal-col" style="text-align: right;">
+                <span class="bal-sub">Remaining</span>
+                <span class="bal-rem-blue">6</span>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-fill" style="width: 40%; background: #2563eb;"></div>
+            </div>
+          </div>
+
+          <!-- EL -->
+          <div class="balance-card">
+            <h4>Earned Leave (EL)</h4>
+            <div class="balance-counts-clean">
+              <div class="bal-col">
+                <span class="bal-sub">Used</span>
+                <span class="bal-num">2</span>
+              </div>
+              <div class="bal-col" style="text-align: right;">
+                <span class="bal-sub">Remaining</span>
+                <span class="bal-rem-blue">8</span>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-fill" style="width: 20%; background: #2563eb;"></div>
+            </div>
+          </div>
+
+          <!-- ML -->
+          <div class="balance-card">
+            <h4>Medical Leave (ML)</h4>
+            <div class="balance-counts-clean">
+              <div class="bal-col">
+                <span class="bal-sub">Used</span>
+                <span class="bal-num">1</span>
+              </div>
+              <div class="bal-col" style="text-align: right;">
+                <span class="bal-sub">Remaining</span>
+                <span class="bal-rem-blue">9</span>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-fill" style="width: 10%; background: #2563eb;"></div>
+            </div>
+          </div>
+
+          <!-- OD -->
+          <div class="balance-card">
+            <h4>On Duty (OD)</h4>
+            <div class="balance-counts-clean">
+              <div class="bal-col">
+                <span class="bal-sub">Used</span>
+                <span class="bal-num">3</span>
+              </div>
+              <div class="bal-col" style="text-align: right;">
+                <span class="bal-sub">Remaining</span>
+                <span class="bal-rem-blue">7</span>
+              </div>
+            </div>
+            <div class="progress-bar-wrap">
+              <div class="progress-fill" style="width: 30%; background: #2563eb;"></div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <!-- =============================================================
+           SCREEN 16: ADMIN PANEL (User & Credential Management)
+           ============================================================= -->
+      <section id="view-admin-panel" class="view-section">
+        <div class="page-header" style="align-items: flex-start;">
+          <div class="page-title-group">
+            <div style="display:flex; align-items:center; gap:10px;">
+              <h2>User & Credential Management</h2>
+              <span class="sidebar-db-badge" style="margin:0;"><span class="db-live-dot"></span> MongoDB Atlas Active</span>
+            </div>
+            <p>Manage all institutional accounts, login credentials, passwords, profile photos, and role permissions directly in MongoDB Atlas.</p>
+          </div>
+          <div style="display: flex; gap: 8px; align-items: center;">
+            <button class="btn btn-outline-sm" onclick="loadAdminPanel()" title="Refresh from MongoDB">
+              <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 4px;">
+                <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
+              </svg>
+              Refresh
+            </button>
+            <button class="btn btn-primary" onclick="openAddUserModal()">
+              <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2.5" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 4px;">
+                <path d="M12 4v16m8-8H4"/>
+              </svg>
+              + Add New User
+            </button>
+          </div>
+        </div>
+
+        <!-- KPI Cards for Admin -->
+        <div class="kpi-grid">
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>TOTAL ACCOUNTS</h4>
+              <div class="kpi-value" id="admin-stat-total" style="color: #2563eb;">-</div>
+            </div>
+            <div class="kpi-icon" style="background:#eff6ff; color:#2563eb;">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0zm6 3a2 2 0 11-4 0 2 2 0 014 0zM7 10a2 2 0 11-4 0 2 2 0 014 0z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>FACULTY MEMBERS</h4>
+              <div class="kpi-value" id="admin-stat-faculty" style="color: #059669;">-</div>
+            </div>
+            <div class="kpi-icon" style="background:#ecfdf5; color:#059669;">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M12 4.354a4 4 0 110 5.292M15 21H3v-1a6 6 0 0112 0v1zm0 0h6v-1a6 6 0 00-9-5.197M13 7a4 4 0 11-8 0 4 4 0 018 0z"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>HODs & DEANS</h4>
+              <div class="kpi-value" id="admin-stat-leadership" style="color: #d97706;">-</div>
+            </div>
+            <div class="kpi-icon" style="background:#fef3c7; color:#d97706;">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 21V5a2 2 0 00-2-2H7a2 2 0 00-2 2v16m14 0h2m-2 0h-5m-9 0H3m2 0h5M9 7h1m-1 4h1m4-4h1m-1 4h1m-5 10v-5a1 1 0 011-1h2a1 1 0 011 1v5m-4 0h4"/></svg>
+            </div>
+          </div>
+          <div class="kpi-card">
+            <div class="kpi-card-info">
+              <h4>ADMINISTRATORS</h4>
+              <div class="kpi-value" id="admin-stat-admin" style="color: #7c3aed;">-</div>
+            </div>
+            <div class="kpi-icon" style="background:#ede9fe; color:#7c3aed;">
+              <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M10.325 4.317c.426-1.756 2.924-1.756 3.35 0a1.724 1.724 0 002.573 1.066c1.543-.94 3.31.826 2.37 2.37a1.724 1.724 0 001.065 2.572c1.756.426 1.756 2.924 0 3.35a1.724 1.724 0 00-1.066 2.573c.94 1.543-.826 3.31-2.37 2.37a1.724 1.724 0 00-2.572 1.065c-.426 1.756-2.924 1.756-3.35 0a1.724 1.724 0 00-2.573-1.066c-1.543.94-3.31-.826-2.37-2.37a1.724 1.724 0 00-1.065-2.572c-1.756-.426-1.756-2.924 0-3.35a1.724 1.724 0 001.066-2.573c-.94-1.543.826-3.31 2.37-2.37.996.608 2.296.07 2.572-1.065z"/><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+            </div>
+          </div>
+        </div>
+
+        <!-- Search & Filter Controls -->
+        <div class="card" style="padding: 14px 18px;">
+          <div class="admin-toolbar-row">
+            <div class="admin-search-box">
+              <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"/></svg>
+              <input type="text" id="admin-user-search" class="form-control" placeholder="Search by name, email, department, role..." oninput="filterAdminUsers()">
+            </div>
+            <select id="admin-role-filter" class="form-control admin-filter-select" onchange="filterAdminUsers()">
+              <option value="All">All Roles</option>
+              <option value="faculty">Faculty</option>
+              <option value="hod">HOD</option>
+              <option value="dean">Dean</option>
+              <option value="principal">Principal</option>
+              <option value="admin">Administrator</option>
+              <option value="student">Student</option>
+            </select>
+            <select id="admin-dept-filter" class="form-control admin-filter-select" onchange="filterAdminUsers()">
+              <option value="All">All Departments</option>
+              <option value="CSE(AIML)">CSE(AIML)</option>
+              <option value="CSE">CSE</option>
+              <option value="ECE">ECE</option>
+              <option value="ME">ME</option>
+              <option value="Civil">Civil</option>
+              <option value="Administration">Administration</option>
+            </select>
+            <div id="admin-filtered-count" style="font-size: 12px; font-weight: 600; color: var(--text-muted); margin-left: auto;">
+              <!-- Filled by JS -->
+            </div>
+          </div>
+
+          <div class="table-responsive">
+            <table class="custom-table">
+              <thead>
+                <tr>
+                  <th style="width: 250px;">User & Profile</th>
+                  <th>Email / Username</th>
+                  <th>Role</th>
+                  <th>Department & Phone</th>
+                  <th>Password</th>
+                  <th style="text-align: right; width: 150px;">Actions</th>
+                </tr>
+              </thead>
+              <tbody id="admin-users-tbody">
+                <!-- Populated from MongoDB Atlas by app.js -->
+              </tbody>
+              <tbody id="admin-faculty-tbody" style="display:none;"></tbody>
+            </table>
+          </div>
+        </div>
+      </section>
+
+    </main>
+  </div>
+</div>
+
+
+
+<!-- ===================================================================
+     MODALS
+     =================================================================== -->
+<!-- Leave Details Modal -->
+<div id="leave-details-modal-backdrop" class="modal-backdrop">
+  <div class="modal-card">
+    <button class="modal-close" onclick="closeModal('leave-details-modal-backdrop')">✕</button>
+    <div id="leave-modal-content">
+      <!-- Injected by JS -->
+    </div>
+  </div>
+</div>
+
+<!-- User & Credential Modal (Admin Create / Edit) -->
+<div id="user-modal-backdrop" class="modal-backdrop">
+  <div class="modal-card" style="max-width: 560px;">
+    <button class="modal-close" onclick="closeModal('user-modal-backdrop')">✕</button>
+    <div style="display:flex; align-items:center; gap:10px; margin-bottom: 16px;">
+      <div style="width:36px; height:36px; border-radius:8px; background:#eff6ff; color:#2563eb; display:flex; align-items:center; justify-content:center;">
+        <svg width="20" height="20" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+      </div>
+      <div>
+        <h3 id="user-modal-title" style="font-size: 17px; font-weight: 800; color: var(--text-dark);">Add New User</h3>
+        <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Saved directly to MongoDB Atlas cluster</p>
+      </div>
+    </div>
+
+    <form id="user-credential-form" onsubmit="handleSaveUserSubmit(event)">
+      <input type="hidden" id="user-form-mode" value="add">
+      <input type="hidden" id="user-form-id" value="">
+
+      <!-- Profile Avatar Picker -->
+      <div class="avatar-selector-section">
+        <label class="form-label" style="margin-bottom: 6px;">Profile Photo / Avatar</label>
+        <div class="avatar-preview-wrapper">
+          <img id="user-form-avatar-preview" class="avatar-preview-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar Preview">
+          <div style="flex: 1;">
+            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Choose from Preset Avatars:</div>
+            <div class="avatar-presets-grid" id="avatar-presets-container">
+              <!-- Rendered by JS with academic preset photos -->
+            </div>
+          </div>
+        </div>
+        <div style="margin-top: 8px;">
+          <input type="text" id="user-form-avatar-url" class="form-control" placeholder="Or paste custom image URL (https://...)" oninput="handleCustomAvatarInput(this.value)">
+        </div>
+      </div>
+
+      <!-- Credentials Grid -->
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label class="form-label">Full Name *</label>
+          <input type="text" id="user-form-name" class="form-control" placeholder="e.g. Dr. Ramesh Patil" required>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Institutional Email *</label>
+          <input type="email" id="user-form-email" class="form-control" placeholder="e.g. ramesh@klsvdit.ac.in" required>
+        </div>
+      </div>
+
+      <div class="form-grid-2col">
+        <div class="form-group" style="position: relative;">
+          <label class="form-label">Password *</label>
+          <input type="password" id="user-form-password" class="form-control" placeholder="Enter password" value="password123" required>
+          <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('user-form-password')" style="top:32px;">
+            <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
+          </button>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Role *</label>
+          <select id="user-form-role" class="form-control" required onchange="handleRoleChange(this.value)">
+            <option value="faculty">Faculty</option>
+            <option value="hod">HOD (Head of Department)</option>
+            <option value="dean">Dean</option>
+            <option value="principal">Principal</option>
+            <option value="admin">Administrator</option>
+            <option value="student">Student</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="form-grid-2col">
+        <div class="form-group">
+          <label class="form-label">Department *</label>
+          <select id="user-form-department" class="form-control" required>
+            <option value="CSE(AIML)">CSE(AIML)</option>
+            <option value="CSE">CSE</option>
+            <option value="ECE">ECE</option>
+            <option value="ME">ME</option>
+            <option value="Civil">Civil</option>
+            <option value="Administration">Administration</option>
+            <option value="Basic Science">Basic Science</option>
+          </select>
+        </div>
+        <div class="form-group">
+          <label class="form-label">Designation</label>
+          <input type="text" id="user-form-designation" class="form-control" placeholder="e.g. Assistant Professor" value="Assistant Professor">
+        </div>
+      </div>
+
+      <div class="form-group">
+        <label class="form-label">Phone Number</label>
+        <input type="text" id="user-form-phone" class="form-control" placeholder="+91 98765 43210">
+      </div>
+
+      <div style="display:flex; gap:10px; margin-top: 18px;">
+        <button type="button" class="btn btn-outline-sm" style="flex:1; justify-content:center;" onclick="closeModal('user-modal-backdrop')">Cancel</button>
+        <button type="submit" id="user-modal-submit-btn" class="btn btn-navy-login" style="flex:2; margin:0;">Save to MongoDB</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<!-- Delete User Confirmation Modal -->
+<div id="delete-user-modal-backdrop" class="modal-backdrop">
+  <div class="modal-card" style="max-width: 440px; text-align: center; padding: 26px 22px;">
+    <button class="modal-close" onclick="closeModal('delete-user-modal-backdrop')">✕</button>
+    <div style="width: 48px; height: 48px; border-radius: 50%; background: #fee2e2; color: #dc2626; display: flex; align-items: center; justify-content: center; margin: 0 auto 14px;">
+      <svg width="24" height="24" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+    </div>
+    <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">Delete User Account?</h3>
+    <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
+      Are you sure you want to delete <strong id="delete-user-name-text">this user</strong> (<span id="delete-user-role-text">Faculty</span>)? This action will permanently remove their credentials from MongoDB Atlas.
+    </p>
+    <div style="display: flex; gap: 10px;">
+      <button type="button" class="btn btn-outline-sm" style="flex: 1; justify-content: center;" onclick="closeModal('delete-user-modal-backdrop')">Cancel</button>
+      <button type="button" id="confirm-delete-user-btn" class="btn btn-navy-login" style="flex: 1; background: #dc2626; border-color: #dc2626; margin:0;" onclick="confirmDeleteUserAction()">Delete User</button>
+    </div>
+  </div>
+</div>
+
+<script src="/static/js/app.js"></script>
+</body>
+</html>
