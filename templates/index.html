@@ -94,12 +94,6 @@
       </a>
     </div>
 
-    <!-- MongoDB Atlas Cloud Status Badge -->
-    <div class="sidebar-db-badge">
-      <span class="db-live-dot"></span>
-      <span>MongoDB Atlas Connected</span>
-    </div>
-
     <!-- Active User Profile Card in Sidebar -->
     <div class="sidebar-user" onclick="handleUserCardClick()">
       <img id="sidebar-user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ccircle cx='64' cy='64' r='64' fill='%23e2e8f0'/%3E%3Cpath d='M64 68a24 24 0 100-48 24 24 0 000 48zm0 12c-26.7 0-48 16-48 36v12h96v-12c0-20-21.3-36-48-36z' fill='%2394a3b8'/%3E%3C/svg%3E" class="user-avatar" alt="Avatar">
@@ -1233,14 +1227,11 @@
       <section id="view-admin-panel" class="view-section">
         <div class="page-header" style="align-items: flex-start;">
           <div class="page-title-group">
-            <div style="display:flex; align-items:center; gap:10px;">
-              <h2>User & Credential Management</h2>
-              <span class="sidebar-db-badge" style="margin:0;"><span class="db-live-dot"></span> MongoDB Atlas Active</span>
-            </div>
-            <p>Manage all institutional accounts, login credentials, passwords, profile photos, and role permissions directly in MongoDB Atlas.</p>
+            <h2>User & Credential Management</h2>
+            <p>Manage all institutional accounts, login credentials, passwords, profile photos, and role permissions.</p>
           </div>
           <div style="display: flex; gap: 8px; align-items: center;">
-            <button class="btn btn-outline-sm" onclick="loadAdminPanel()" title="Refresh from MongoDB">
+            <button class="btn btn-outline-sm" onclick="loadAdminPanel()" title="Refresh Accounts">
               <svg width="14" height="14" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24" style="vertical-align: -2px; margin-right: 4px;">
                 <path d="M4 4v5h.582m15.356 2A8.001 8.001 0 004.582 9m0 0H9m11 11v-5h-.581m0 0a8.003 8.003 0 01-15.357-2m15.357 2H15"/>
               </svg>
@@ -1375,7 +1366,7 @@
       </div>
       <div>
         <h3 id="user-modal-title" style="font-size: 17px; font-weight: 800; color: var(--text-dark);">Add New User</h3>
-        <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Saved directly to MongoDB Atlas cluster</p>
+        <p style="font-size: 11.5px; color: var(--text-muted); margin-top: 1px;">Manage institutional user credentials and permissions</p>
       </div>
     </div>
 
@@ -1469,7 +1460,7 @@
 
       <div style="display:flex; gap:10px; margin-top: 18px;">
         <button type="button" class="btn btn-outline-sm" style="flex:1; justify-content:center;" onclick="closeModal('user-modal-backdrop')">Cancel</button>
-        <button type="submit" id="user-modal-submit-btn" class="btn btn-navy-login" style="flex:2; margin:0;">Save to MongoDB</button>
+        <button type="submit" id="user-modal-submit-btn" class="btn btn-navy-login" style="flex:2; margin:0;">Save Changes</button>
       </div>
     </form>
   </div>
@@ -1484,7 +1475,7 @@
     </div>
     <h3 style="font-size: 17px; font-weight: 800; color: var(--text-dark); margin-bottom: 6px;">Delete User Account?</h3>
     <p style="font-size: 12.5px; color: var(--text-muted); line-height: 1.5; margin-bottom: 18px;">
-      Are you sure you want to delete <strong id="delete-user-name-text">this user</strong> (<span id="delete-user-role-text">Faculty</span>)? This action will permanently remove their credentials from MongoDB Atlas.
+      Are you sure you want to delete <strong id="delete-user-name-text">this user</strong> (<span id="delete-user-role-text">Faculty</span>)? This action cannot be undone.
     </p>
     <div style="display: flex; gap: 10px;">
       <button type="button" class="btn btn-outline-sm" style="flex: 1; justify-content: center;" onclick="closeModal('delete-user-modal-backdrop')">Cancel</button>

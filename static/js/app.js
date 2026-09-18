@@ -651,7 +651,7 @@ async function loadAdminPanel() {
     <tr>
       <td colspan="6" style="text-align:center; padding:32px; color:var(--text-muted);">
         <div style="display:inline-flex; align-items:center; gap:8px;">
-          <span class="db-live-dot"></span> Loading live accounts from MongoDB Atlas...
+          Loading user accounts...
         </div>
       </td>
     </tr>
@@ -687,7 +687,7 @@ function renderAdminTable(userList) {
     tbody.innerHTML = `
       <tr>
         <td colspan="6" style="text-align:center; padding:36px; color:var(--text-muted);">
-          No users match the selected search or filter criteria in MongoDB.
+          No users match the selected search or filter criteria.
         </td>
       </tr>
     `;
@@ -1023,7 +1023,7 @@ async function handleSaveUserSubmit(e) {
 
   if (submitBtn) {
     submitBtn.disabled = true;
-    submitBtn.textContent = 'Saving to MongoDB...';
+    submitBtn.textContent = 'Saving...';
   }
 
   try {
@@ -1036,12 +1036,12 @@ async function handleSaveUserSubmit(e) {
 
     if (submitBtn) {
       submitBtn.disabled = false;
-      submitBtn.textContent = 'Save to MongoDB';
+      submitBtn.textContent = 'Save Changes';
     }
 
     if (res && res.success) {
       closeModal('user-modal-backdrop');
-      showAdminToast(mode === 'add' ? `User '${payload.name}' created successfully in MongoDB!` : `Credentials for '${payload.name}' updated in MongoDB!`, 'success');
+      showAdminToast(mode === 'add' ? `User '${payload.name}' created successfully!` : `Credentials for '${payload.name}' updated!`, 'success');
 
       // If active logged-in user edited their own credentials, update current session state
       if (AppState.currentUser && (AppState.currentUser.id === userId || AppState.currentUser.email === payload.email)) {
@@ -1053,7 +1053,7 @@ async function handleSaveUserSubmit(e) {
       await loadAdminPanel();
       await loadUsers();
     } else {
-      alert((res && res.detail) ? res.detail : ((res && res.message) ? res.message : 'Error saving user to MongoDB.'));
+      alert((res && res.detail) ? res.detail : ((res && res.message) ? res.message : 'Error saving user.'));
     }
   } catch (err) {
     if (submitBtn) {
@@ -1096,7 +1096,7 @@ async function confirmDeleteUserAction() {
 
     if (res && res.success) {
       closeModal('delete-user-modal-backdrop');
-      showAdminToast('User deleted permanently from MongoDB Atlas.', 'success');
+      showAdminToast('User deleted successfully.', 'success');
       selectedDeleteUserId = null;
       await loadAdminPanel();
       await loadUsers();
