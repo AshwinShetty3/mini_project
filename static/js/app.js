@@ -187,7 +187,7 @@ function updateUserUI() {
   const nameEl = document.getElementById('sidebar-user-name');
   const roleEl = document.getElementById('sidebar-user-role');
 
-  const avatarSrc = u.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
+  const avatarSrc = u.avatar || DEFAULT_AVATAR;
   if (avatarEl) avatarEl.src = avatarSrc;
   if (mobileAvatarEl) mobileAvatarEl.src = avatarSrc;
   if (nameEl) nameEl.textContent = u.name;
@@ -639,14 +639,7 @@ function loadLeaveHistory() {
 
 // --- Screen 16: Admin User & Credential Management (MongoDB Atlas) ---
 
-const AVATAR_PRESETS = [
-  { label: 'Academic Female 1', url: 'https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80' },
-  { label: 'Academic Male 1',   url: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&auto=format&fit=crop&q=80' },
-  { label: 'Academic Male 2',   url: 'https://images.unsplash.com/photo-1500648767791-00dcc994a43e?w=150&auto=format&fit=crop&q=80' },
-  { label: 'Senior Professor',  url: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&auto=format&fit=crop&q=80' },
-  { label: 'Academic Female 2', url: 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80' },
-  { label: 'Student / Junior',  url: 'https://images.unsplash.com/photo-1539571696357-5a69c17a67c6?w=150&auto=format&fit=crop&q=80' }
-];
+const DEFAULT_AVATAR = "data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ccircle cx='64' cy='64' r='64' fill='%23e2e8f0'/%3E%3Cpath d='M64 68a24 24 0 100-48 24 24 0 000 48zm0 12c-26.7 0-48 16-48 36v12h96v-12c0-20-21.3-36-48-36z' fill='%2394a3b8'/%3E%3C/svg%3E";
 
 let selectedDeleteUserId = null;
 
@@ -792,34 +785,129 @@ function filterAdminUsers() {
   renderAdminTable(filtered);
 }
 
-function renderAvatarPresets(selectedUrl) {
-  const container = document.getElementById('avatar-presets-container');
-  if (!container) return;
+/**
+ * Handle direct device image upload (Max 100MB)
+ * Validates file size, extracts image, and downscales to high-res square avatar via Canvas
+ */
+function handleAvatarDeviceUpload(event) {
+  const file = event.target.files && event.target.files[0];
+  if (!file) return;
 
-  container.innerHTML = AVATAR_PRESETS.map((p, idx) => {
-    const isSel = p.url === selectedUrl;
-    return `
-      <button type="button" class="avatar-preset-btn ${isSel ? 'selected' : ''}" title="${p.label}" onclick="selectAvatarPreset('${p.url}', this)">
-        <img src="${p.url}" alt="${p.label}">
-      </button>
-    `;
-  }).join('');
-}
-
-function selectAvatarPreset(url, btnEl) {
-  document.querySelectorAll('.avatar-preset-btn').forEach(b => b.classList.remove('selected'));
-  if (btnEl) btnEl.classList.add('selected');
-  const urlInput = document.getElementById('user-form-avatar-url');
+  const statusEl = document.getElementById('user-form-avatar-status');
   const previewImg = document.getElementById('user-form-avatar-preview');
-  if (urlInput) urlInput.value = url;
-  if (previewImg) previewImg.src = url;
-}
+  const dataInput = document.getElementById('user-form-avatar-data');
+  const resetBtn = document.getElementById('user-form-avatar-reset-btn');
 
-function handleCustomAvatarInput(val) {
-  const previewImg = document.getElementById('user-form-avatar-preview');
-  if (previewImg) {
-    previewImg.src = val.trim() || AVATAR_PRESETS[0].url;
+  // Validate image MIME type
+  if (!file.type.startsWith('image/')) {
+    if (statusEl) {
+      statusEl.textContent = 'Please select a valid image file (JPG, PNG, WebP, GIF).';
+      statusEl.className = 'avatar-upload-status error';
+      statusEl.style.display = 'block';
+    }
+    event.target.value = '';
+    return;
   }
+
+  // Strict 100MB max limit
+  const MAX_SIZE_MB = 100;
+  const MAX_SIZE_BYTES = MAX_SIZE_MB * 1024 * 1024;
+  if (file.size > MAX_SIZE_BYTES) {
+    const sizeInMB = (file.size / (1024 * 1024)).toFixed(1);
+    if (statusEl) {
+      statusEl.textContent = `File size (${sizeInMB}MB) exceeds the maximum allowed limit of 100MB.`;
+      statusEl.className = 'avatar-upload-status error';
+      statusEl.style.display = 'block';
+    }
+    alert(`File is too large (${sizeInMB}MB)! Maximum allowed image size is 100MB.`);
+    event.target.value = '';
+    return;
+  }
+
+  const sizeStr = file.size > 1024 * 1024
+    ? `${(file.size / (1024 * 1024)).toFixed(1)}MB`
+    : `${Math.round(file.size / 1024)}KB`;
+
+  if (statusEl) {
+    statusEl.textContent = `Processing image (${sizeStr})...`;
+    statusEl.className = 'avatar-upload-status';
+    statusEl.style.display = 'block';
+  }
+
+  const reader = new FileReader();
+  reader.onload = function(e) {
+    const img = new Image();
+    img.onload = function() {
+      try {
+        const canvas = document.createElement('canvas');
+        const MAX_DIM = 400; // 400x400 max gives crystal-clear resolution on all screen densities
+        const width = img.width;
+        const height = img.height;
+
+        // Crop to center square
+        const minDim = Math.min(width, height);
+        const sx = (width - minDim) / 2;
+        const sy = (height - minDim) / 2;
+
+        canvas.width = Math.min(minDim, MAX_DIM);
+        canvas.height = canvas.width;
+
+        const ctx = canvas.getContext('2d');
+        ctx.drawImage(img, sx, sy, minDim, minDim, 0, 0, canvas.width, canvas.height);
+
+        const optimizedDataUrl = canvas.toDataURL('image/jpeg', 0.88);
+
+        if (previewImg) previewImg.src = optimizedDataUrl;
+        if (dataInput) dataInput.value = optimizedDataUrl;
+        if (resetBtn) resetBtn.style.display = 'inline-block';
+
+        if (statusEl) {
+          statusEl.textContent = `✓ Uploaded: ${file.name} (${sizeStr})`;
+          statusEl.className = 'avatar-upload-status success';
+          statusEl.style.display = 'block';
+        }
+      } catch (err) {
+        console.error('Canvas error:', err);
+        if (previewImg) previewImg.src = e.target.result;
+        if (dataInput) dataInput.value = e.target.result;
+        if (resetBtn) resetBtn.style.display = 'inline-block';
+      }
+    };
+    img.onerror = function() {
+      if (statusEl) {
+        statusEl.textContent = 'Could not process image file. Please choose another image.';
+        statusEl.className = 'avatar-upload-status error';
+        statusEl.style.display = 'block';
+      }
+    };
+    img.src = e.target.result;
+  };
+  reader.onerror = function() {
+    if (statusEl) {
+      statusEl.textContent = 'Error reading file from device.';
+      statusEl.className = 'avatar-upload-status error';
+      statusEl.style.display = 'block';
+    }
+  };
+  reader.readAsDataURL(file);
+}
+
+function resetUploadedAvatar() {
+  const fileInput = document.getElementById('user-form-avatar-file');
+  const previewImg = document.getElementById('user-form-avatar-preview');
+  const dataInput = document.getElementById('user-form-avatar-data');
+  const statusEl = document.getElementById('user-form-avatar-status');
+  const resetBtn = document.getElementById('user-form-avatar-reset-btn');
+
+  if (fileInput) fileInput.value = '';
+  if (dataInput) dataInput.value = DEFAULT_AVATAR;
+  if (previewImg) previewImg.src = DEFAULT_AVATAR;
+  if (statusEl) {
+    statusEl.textContent = 'Avatar reset to default.';
+    statusEl.className = 'avatar-upload-status';
+    statusEl.style.display = 'block';
+  }
+  if (resetBtn) resetBtn.style.display = 'none';
 }
 
 function handleRoleChange(role) {
@@ -857,10 +945,16 @@ function openAddUserModal() {
   document.getElementById('user-form-designation').value = 'Assistant Professor';
   document.getElementById('user-form-phone').value = '';
 
-  const defaultAvatar = AVATAR_PRESETS[0].url;
-  document.getElementById('user-form-avatar-url').value = defaultAvatar;
+  const defaultAvatar = DEFAULT_AVATAR;
+  document.getElementById('user-form-avatar-data').value = defaultAvatar;
   document.getElementById('user-form-avatar-preview').src = defaultAvatar;
-  renderAvatarPresets(defaultAvatar);
+
+  const fileInput = document.getElementById('user-form-avatar-file');
+  if (fileInput) fileInput.value = '';
+  const statusEl = document.getElementById('user-form-avatar-status');
+  if (statusEl) statusEl.style.display = 'none';
+  const resetBtn = document.getElementById('user-form-avatar-reset-btn');
+  if (resetBtn) resetBtn.style.display = 'none';
 
   document.getElementById('user-modal-backdrop').classList.add('active');
 }
@@ -884,10 +978,23 @@ function openEditUserModal(userId) {
   document.getElementById('user-form-designation').value = user.designation || '';
   document.getElementById('user-form-phone').value = user.phone || '';
 
-  const avatar = user.avatar || AVATAR_PRESETS[0].url;
-  document.getElementById('user-form-avatar-url').value = avatar;
+  const avatar = user.avatar || DEFAULT_AVATAR;
+  document.getElementById('user-form-avatar-data').value = avatar;
   document.getElementById('user-form-avatar-preview').src = avatar;
-  renderAvatarPresets(avatar);
+
+  const fileInput = document.getElementById('user-form-avatar-file');
+  if (fileInput) fileInput.value = '';
+
+  const statusEl = document.getElementById('user-form-avatar-status');
+  const resetBtn = document.getElementById('user-form-avatar-reset-btn');
+
+  const hasCustomAvatar = avatar && avatar !== DEFAULT_AVATAR;
+  if (statusEl) {
+    statusEl.textContent = hasCustomAvatar ? 'Photo attached' : '';
+    statusEl.className = 'avatar-upload-status';
+    statusEl.style.display = hasCustomAvatar ? 'block' : 'none';
+  }
+  if (resetBtn) resetBtn.style.display = hasCustomAvatar ? 'inline-block' : 'none';
 
   document.getElementById('user-modal-backdrop').classList.add('active');
 }
@@ -906,7 +1013,7 @@ async function handleSaveUserSubmit(e) {
     department: document.getElementById('user-form-department').value,
     designation: document.getElementById('user-form-designation').value.trim(),
     phone: document.getElementById('user-form-phone').value.trim(),
-    avatar: document.getElementById('user-form-avatar-url').value.trim() || AVATAR_PRESETS[0].url
+    avatar: document.getElementById('user-form-avatar-data').value.trim() || DEFAULT_AVATAR
   };
 
   if (!payload.name || !payload.email) {

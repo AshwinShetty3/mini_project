@@ -1750,55 +1750,104 @@ body {
   margin-bottom: 14px;
 }
 
-.avatar-preview-wrapper {
+.avatar-upload-card {
   display: flex;
   align-items: center;
   gap: 16px;
-  margin-bottom: 10px;
+}
+
+.avatar-preview-wrapper {
+  position: relative;
+  flex-shrink: 0;
 }
 
 .avatar-preview-img {
-  width: 52px;
-  height: 52px;
+  width: 56px;
+  height: 56px;
   border-radius: 50%;
   object-fit: cover;
   border: 2px solid #2563eb;
+  background: #e2e8f0;
   box-shadow: var(--shadow-sm);
+  display: block;
 }
 
-.avatar-presets-grid {
+.avatar-upload-controls {
+  flex: 1;
+  min-width: 0;
+}
+
+.avatar-upload-buttons {
   display: flex;
-  gap: 8px;
-  flex-wrap: wrap;
   align-items: center;
-  margin-top: 8px;
+  gap: 8px;
+  margin-bottom: 6px;
+  flex-wrap: wrap;
 }
 
-.avatar-preset-btn {
-  width: 34px;
-  height: 34px;
-  border-radius: 50%;
-  border: 2px solid transparent;
-  padding: 0;
+.avatar-upload-btn {
   cursor: pointer;
-  overflow: hidden;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-weight: 600;
+  padding: 6px 12px;
+  font-size: 12px;
+  background: #ffffff;
+  border: 1px solid #cbd5e1;
+  border-radius: 6px;
+  color: var(--text-dark);
+  transition: var(--transition);
+  user-select: none;
+}
+
+.avatar-upload-btn:hover {
+  background: #eff6ff;
+  border-color: #93c5fd;
+  color: var(--accent-blue);
+}
+
+.avatar-remove-btn {
+  background: #fef2f2;
+  border: 1px solid #fecaca;
+  color: #dc2626;
+  font-size: 11.5px;
+  font-weight: 600;
+  padding: 6px 10px;
+  border-radius: 6px;
+  cursor: pointer;
   transition: var(--transition);
 }
 
-.avatar-preset-btn img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+.avatar-remove-btn:hover {
+  background: #fee2e2;
+  border-color: #f87171;
 }
 
-.avatar-preset-btn:hover {
-  transform: scale(1.1);
-  border-color: #93c5fd;
+.avatar-upload-hint {
+  font-size: 11px;
+  color: var(--text-muted);
+  line-height: 1.4;
 }
 
-.avatar-preset-btn.selected {
-  border-color: #2563eb;
-  box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.4);
+.avatar-upload-hint strong {
+  color: #1e293b;
+}
+
+.avatar-upload-status {
+  font-size: 11.5px;
+  margin-top: 5px;
+  font-weight: 500;
+  word-break: break-all;
+}
+
+.avatar-upload-status.success {
+  color: #059669;
+}
+
+.avatar-upload-status.error {
+  color: #dc2626;
+  font-weight: 600;
 }
 
 .btn-action-group {

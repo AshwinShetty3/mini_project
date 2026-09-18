@@ -102,7 +102,7 @@
 
     <!-- Active User Profile Card in Sidebar -->
     <div class="sidebar-user" onclick="handleUserCardClick()">
-      <img id="sidebar-user-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" class="user-avatar" alt="Avatar">
+      <img id="sidebar-user-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ccircle cx='64' cy='64' r='64' fill='%23e2e8f0'/%3E%3Cpath d='M64 68a24 24 0 100-48 24 24 0 000 48zm0 12c-26.7 0-48 16-48 36v12h96v-12c0-20-21.3-36-48-36z' fill='%2394a3b8'/%3E%3C/svg%3E" class="user-avatar" alt="Avatar">
       <div class="user-info">
         <div id="sidebar-user-name" class="user-name">Dr. Ananya</div>
         <div id="sidebar-user-role" class="user-role-tag">Faculty - CSE(AIML)</div>
@@ -148,7 +148,7 @@
         <span class="mobile-brand-title">FacultyFlow</span>
       </div>
       <div class="mobile-topbar-right">
-        <img id="mobile-topbar-avatar" src="https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80" class="avatar-img-sm" style="width: 32px; height: 32px; cursor: pointer;" onclick="toggleMobileSidebar()" alt="Profile">
+        <img id="mobile-topbar-avatar" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ccircle cx='64' cy='64' r='64' fill='%23e2e8f0'/%3E%3Cpath d='M64 68a24 24 0 100-48 24 24 0 000 48zm0 12c-26.7 0-48 16-48 36v12h96v-12c0-20-21.3-36-48-36z' fill='%2394a3b8'/%3E%3C/svg%3E" class="avatar-img-sm" style="width: 32px; height: 32px; cursor: pointer;" onclick="toggleMobileSidebar()" alt="Profile">
       </div>
     </header>
 
@@ -1383,21 +1383,31 @@
       <input type="hidden" id="user-form-mode" value="add">
       <input type="hidden" id="user-form-id" value="">
 
-      <!-- Profile Avatar Picker -->
+      <!-- Profile Avatar Uploader (Device Only, Max 100MB) -->
       <div class="avatar-selector-section">
-        <label class="form-label" style="margin-bottom: 6px;">Profile Photo / Avatar</label>
-        <div class="avatar-preview-wrapper">
-          <img id="user-form-avatar-preview" class="avatar-preview-img" src="https://images.unsplash.com/photo-1534528741775-53994a69daeb?w=150&auto=format&fit=crop&q=80" alt="Avatar Preview">
-          <div style="flex: 1;">
-            <div style="font-size: 11px; font-weight: 600; color: var(--text-muted); margin-bottom: 4px;">Choose from Preset Avatars:</div>
-            <div class="avatar-presets-grid" id="avatar-presets-container">
-              <!-- Rendered by JS with academic preset photos -->
+        <label class="form-label" style="margin-bottom: 6px;">Profile Photo / Avatar (Upload from Device)</label>
+        <div class="avatar-upload-card">
+          <div class="avatar-preview-wrapper" style="margin-bottom: 0;">
+            <img id="user-form-avatar-preview" class="avatar-preview-img" src="data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 128 128'%3E%3Ccircle cx='64' cy='64' r='64' fill='%23e2e8f0'/%3E%3Cpath d='M64 68a24 24 0 100-48 24 24 0 000 48zm0 12c-26.7 0-48 16-48 36v12h96v-12c0-20-21.3-36-48-36z' fill='%2394a3b8'/%3E%3C/svg%3E" alt="Avatar Preview">
+          </div>
+          <div class="avatar-upload-controls">
+            <div class="avatar-upload-buttons">
+              <label for="user-form-avatar-file" class="avatar-upload-btn">
+                <svg width="15" height="15" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m4-4v12"/></svg>
+                Choose Photo from Device
+              </label>
+              <input type="file" id="user-form-avatar-file" accept="image/*" style="display: none;" onchange="handleAvatarDeviceUpload(event)">
+              <button type="button" id="user-form-avatar-reset-btn" class="avatar-remove-btn" style="display: none;" onclick="resetUploadedAvatar()">
+                Remove
+              </button>
             </div>
+            <div class="avatar-upload-hint">
+              <span>Supports JPG, PNG, WebP, GIF</span> &bull; <strong>Max Size: 100MB</strong>
+            </div>
+            <div id="user-form-avatar-status" class="avatar-upload-status" style="display: none;"></div>
           </div>
         </div>
-        <div style="margin-top: 8px;">
-          <input type="text" id="user-form-avatar-url" class="form-control" placeholder="Or paste custom image URL (https://...)" oninput="handleCustomAvatarInput(this.value)">
-        </div>
+        <input type="hidden" id="user-form-avatar-data" value="">
       </div>
 
       <!-- Credentials Grid -->
