@@ -42,42 +42,29 @@
           <p>Login to your account</p>
         </div>
         
-        <form id="login-form-el" onsubmit="handleLoginSubmit(event)">
+        <form id="login-form-el" onsubmit="handleLoginSubmit(event)" autocomplete="off">
           <div class="form-group">
-            <label class="form-label">Email / Username</label>
-            <input type="text" id="login-email" class="form-control" placeholder="Enter your college email or username" value="ananya@klsvdit.ac.in" required>
+            <label class="form-label" for="login-email">Email / Username</label>
+            <input type="text" id="login-email" class="form-control" placeholder="Enter your college email or username" autocomplete="username" required>
           </div>
           <div class="form-group" style="position: relative;">
-            <label class="form-label">Password</label>
-            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" value="••••••••" required>
-            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('login-password')">
+            <label class="form-label" for="login-password">Password</label>
+            <input type="password" id="login-password" class="form-control" placeholder="Enter your password" autocomplete="current-password" required>
+            <button type="button" class="eye-toggle-btn" onclick="togglePasswordVisibility('login-password')" aria-label="Toggle password visibility">
               <svg width="16" height="16" fill="none" stroke="currentColor" stroke-width="2" viewBox="0 0 24 24"><path d="M15 12a3 3 0 11-6 0 3 3 0 016 0z"/><path d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z"/></svg>
             </button>
           </div>
           <div id="login-error-msg" style="display:none; color:#dc2626; font-size:12px; margin-bottom:12px; font-weight:600; background:#fef2f2; border:1px solid #fecaca; border-radius:6px; padding:8px 10px;"></div>
           <div class="form-row-check">
             <label class="form-check">
-              <input type="checkbox" checked>
+              <input type="checkbox">
               <span>Remember me</span>
             </label>
-            <a href="#" class="forgot-link">Forgot password?</a>
+            <a href="#" class="forgot-link" onclick="alert('Please contact the institution administrator to reset your password.'); return false;">Forgot password?</a>
           </div>
           <button type="submit" id="login-submit-btn" class="btn btn-navy-login">Login</button>
           <div class="login-register-link">
-            Don't have an account? <a href="#" onclick="alert('Please contact your administrator to provision an institutional account.');">Contact Admin</a>
-          </div>
-
-          <!-- Quick 1-Click Role Login for Testing All User Types -->
-          <div class="demo-login-box">
-            <p class="demo-login-title">Quick Test Login (Click to preview user type):</p>
-            <div class="demo-pills-row">
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('student')">👨‍🎓 Student</button>
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('faculty')">👩‍🏫 Faculty</button>
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('hod')">👨‍💼 HOD</button>
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('dean')">🎓 Dean</button>
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('principal')">🏛️ Principal</button>
-              <button type="button" class="demo-pill-chip" onclick="quickLogin('admin')">⚙️ Admin</button>
-            </div>
+            Don't have an account? <a href="#" onclick="alert('Please contact your administrator to provision an institutional account.'); return false;">Contact Admin</a>
           </div>
         </form>
       </div>

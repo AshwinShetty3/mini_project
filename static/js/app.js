@@ -89,6 +89,18 @@ function getDefaultViewForRole(role) {
 function showLoginPage() {
   const loginEl = document.getElementById('view-login');
   const appRoot = document.getElementById('app-root');
+  const emailInput = document.getElementById('login-email');
+  const passInput = document.getElementById('login-password');
+  const errorEl = document.getElementById('login-error-msg');
+
+  // Ensure fields are completely empty with clean placeholders
+  if (emailInput) emailInput.value = '';
+  if (passInput) passInput.value = '';
+  if (errorEl) {
+    errorEl.textContent = '';
+    errorEl.style.display = 'none';
+  }
+
   if (loginEl) loginEl.style.display = 'block';
   if (appRoot) appRoot.style.display = 'none';
   AppState.currentView = 'view-login';
@@ -104,6 +116,17 @@ async function handleLoginSubmit(event) {
   const errorEl = document.getElementById('login-error-msg');
   const submitBtn = document.getElementById('login-submit-btn');
 
+  const emailVal = emailInput ? emailInput.value.trim() : '';
+  const passwordVal = passwordInput ? passwordInput.value : '';
+
+  if (!emailVal || !passwordVal) {
+    if (errorEl) {
+      errorEl.textContent = 'Please enter both your email/username and password.';
+      errorEl.style.display = 'block';
+    }
+    return;
+  }
+
   if (errorEl) errorEl.style.display = 'none';
   if (submitBtn) {
     submitBtn.disabled = true;
@@ -111,8 +134,8 @@ async function handleLoginSubmit(event) {
   }
 
   const res = await apiCall('/api/auth/login', 'POST', {
-    email: emailInput ? emailInput.value : '',
-    password: passwordInput ? passwordInput.value : ''
+    email: emailVal,
+    password: passwordVal
   });
 
   if (submitBtn) {
@@ -136,27 +159,11 @@ async function handleLoginSubmit(event) {
     switchView(landingView);
   } else {
     if (errorEl) {
-      const msg = (res && res.message) || (res && res.detail) || 'Database or Server connection error. Please verify Render Environment variables and MongoDB Atlas IP access (0.0.0.0/0).';
+      const msg = (res && res.message) || (res && res.detail) || 'Invalid credentials or server error. Please try again.';
       errorEl.textContent = msg;
       errorEl.style.display = 'block';
     }
   }
-}
-
-function quickLogin(role) {
-  const emailMap = {
-    student: 'student@klsvdit.ac.in',
-    faculty: 'ananya@klsvdit.ac.in',
-    hod: 'rahul@klsvdit.ac.in',
-    dean: 'kumar@klsvdit.ac.in',
-    principal: 'reddy@klsvdit.ac.in',
-    admin: 'admin@klsvdit.ac.in'
-  };
-  const emailInput = document.getElementById('login-email');
-  const passInput = document.getElementById('login-password');
-  if (emailInput) emailInput.value = emailMap[role] || role;
-  if (passInput) passInput.value = 'password123';
-  handleLoginSubmit(null);
 }
 
 /**

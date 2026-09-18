@@ -129,7 +129,19 @@ async def login(data: LoginRequest):
         )
 
     identifier = (data.email or "").strip().lower()
-    
+    req_pass = (data.password or "").strip()
+
+    if not identifier:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Please enter your email or username."}
+        )
+    if not req_pass:
+        return JSONResponse(
+            status_code=400,
+            content={"success": False, "message": "Please enter your password."}
+        )
+
     matched = None
     # 1. Match exact email
     for u in users:
@@ -143,32 +155,22 @@ async def login(data: LoginRequest):
             u_email = u.get("email", "").lower()
             u_name = u.get("name", "").lower()
             username = u_email.split("@")[0]
-            if identifier in [username, u_name, u.get("role", "").lower()]:
-                matched = u
-                break
-
-    # 3. Match role if provided
-    if not matched and data.role:
-        for u in users:
-            if u.get("role", "").lower() == data.role.lower():
+            if identifier in [username, u_name]:
                 matched = u
                 break
 
     if matched:
-        # Verify password if specified (skipping masked demo dots)
-        req_pass = (data.password or "").strip()
         user_pass = matched.get("password", "password123")
-        if req_pass and req_pass != "••••••••":
-            if req_pass != user_pass and req_pass != "password123":
-                return JSONResponse(
-                    status_code=401,
-                    content={"success": False, "message": "Incorrect password. Please verify your credentials."}
-                )
+        if req_pass != user_pass and req_pass != "password123":
+            return JSONResponse(
+                status_code=401,
+                content={"success": False, "message": "Incorrect password. Please verify your credentials."}
+            )
         return {"success": True, "user": matched}
 
     return JSONResponse(
         status_code=401,
-        content={"success": False, "message": "Invalid email or username. Available accounts: ananya@klsvdit.ac.in, admin@klsvdit.ac.in, rahul@klsvdit.ac.in, etc."}
+        content={"success": False, "message": "Invalid email or username. Please verify your credentials or contact administrator."}
     )
 
 # --- Leaves API ---
