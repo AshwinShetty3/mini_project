@@ -175,10 +175,13 @@ function updateUserUI() {
   if (!u) return;
 
   const avatarEl = document.getElementById('sidebar-user-avatar');
+  const mobileAvatarEl = document.getElementById('mobile-topbar-avatar');
   const nameEl = document.getElementById('sidebar-user-name');
   const roleEl = document.getElementById('sidebar-user-role');
 
-  if (avatarEl) avatarEl.src = u.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
+  const avatarSrc = u.avatar || 'https://images.unsplash.com/photo-1573496359142-b8d87734a5a2?w=150&auto=format&fit=crop&q=80';
+  if (avatarEl) avatarEl.src = avatarSrc;
+  if (mobileAvatarEl) mobileAvatarEl.src = avatarSrc;
   if (nameEl) nameEl.textContent = u.name;
   if (roleEl) {
     if (u.role === 'student') roleEl.textContent = 'Student - 5th Sem A';
@@ -296,6 +299,31 @@ function switchView(viewId) {
 
   // Load screen data
   refreshViewData(viewId);
+
+  // Close mobile sidebar on navigation
+  closeMobileSidebar();
+}
+
+function toggleMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (!sidebar) return;
+  const isOpen = sidebar.classList.contains('mobile-open');
+  if (isOpen) {
+    closeMobileSidebar();
+  } else {
+    sidebar.classList.add('mobile-open');
+    if (backdrop) backdrop.classList.add('active');
+    document.body.style.overflow = 'hidden';
+  }
+}
+
+function closeMobileSidebar() {
+  const sidebar = document.getElementById('app-sidebar');
+  const backdrop = document.getElementById('sidebar-backdrop');
+  if (sidebar) sidebar.classList.remove('mobile-open');
+  if (backdrop) backdrop.classList.remove('active');
+  document.body.style.overflow = '';
 }
 
 function refreshViewData(viewId) {
